@@ -189,7 +189,7 @@ export default function DashboardPage() {
       balanceEvoSampled, heatmapData, top5Best, top5Worst,
       accountSummary, weekTrades, weekPnlTotal, wrSpark, monthlyPnls,
     };
-  }, [state, accFilter]);
+  }, [state, accFilter, dateRange]);
 
   const tooltipStyle = { background: 'var(--gpfx-card)', border: '1px solid var(--gpfx-border)', borderRadius: 8, color: 'var(--gpfx-text-primary)' };
 
