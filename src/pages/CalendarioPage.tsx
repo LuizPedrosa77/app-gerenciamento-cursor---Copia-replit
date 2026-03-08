@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useGPFX } from '@/contexts/GPFXContext';
 import {
   MONTHS_FULL, WEEKDAYS, PAIRS, DIRECTIONS, RESULTS,
