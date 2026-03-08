@@ -153,6 +153,39 @@ export default function PlanilhaPage() {
     setBulkDeleteModal(false);
   };
 
+  // Screenshot helpers
+  const openScreenshotModal = (trade: Trade) => {
+    setScreenshotPreview(trade.screenshot?.data || null);
+    setScreenshotCaption(trade.screenshot?.caption || '');
+    setScreenshotModal({ open: true, trade });
+  };
+
+  const handleScreenshotFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Imagem muito grande. Máximo 5MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const data = ev.target?.result as string;
+      if (data.length > 2 * 1024 * 1024) {
+        if (!confirm('⚠️ A imagem tem mais de 2MB em base64. Isso pode deixar o app mais lento. Continuar?')) return;
+      }
+      setScreenshotPreview(data);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const saveScreenshot = () => {
+    if (!screenshotModal.trade) return;
+    if (screenshotPreview) {
+      updateTrade(screenshotModal.trade.id, 'screenshot', { data: screenshotPreview, caption: screenshotCaption });
+    } else {
+      updateTrade(screenshotModal.trade.id, 'screenshot', undefined);
+    }
+    setScreenshotModal({ open: false, trade: null });
+  };
+
   // Edit modal helpers
   const openEditModal = (trade: Trade) => {
     setEditForm({ ...trade });
