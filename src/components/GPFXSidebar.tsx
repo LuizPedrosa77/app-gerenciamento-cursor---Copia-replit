@@ -172,13 +172,14 @@ export function AppSidebar({ activeView, onChangeView, mobileOpen, onToggleMobil
                 onClick={() => handleClick(item.id)}
               >
                 <item.icon
-                  className={`
-                    sidebar-menu-icon flex-shrink-0
-                    ${isActive ? 'sidebar-icon-active' : ''}
-                    ${isPinging ? 'sidebar-icon-ping' : ''}
-                  `}
-                  size={18}
-                />
+                   className={`
+                     sidebar-menu-icon flex-shrink-0
+                     ${isActive ? 'sidebar-icon-active' : ''}
+                     ${isPinging ? 'sidebar-icon-ping' : ''}
+                   `}
+                   size={18}
+                   style={{ color: isActive ? '#00d395' : 'rgba(255,255,255,0.55)' }}
+                 />
                 {!effectiveCollapsed && (
                   <span className={`sidebar-menu-label ${isActive ? 'sidebar-label-active' : ''}`}>
                     {item.label}
