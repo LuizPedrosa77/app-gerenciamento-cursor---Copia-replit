@@ -89,7 +89,7 @@ export default function EvolucaoPage() {
     const winRates = monthCounts.map((cnt, i) => cnt > 0 ? parseFloat(((monthWins[i] / cnt) * 100).toFixed(1)) : 0);
 
     return { labels, monthPnls, monthPcts, cumPcts, balanceEvo, winRates, monthWins, monthLosses, monthCounts, baseBalance };
-  }, [state, accFilter, yearFilter]);
+  }, [state, accFilter, yearFilter, dateRange]);
 
   const totalPnl = data.monthPnls.reduce((s, v) => s + v, 0);
   const totalTrades = data.monthCounts.reduce((s, v) => s + v, 0);
