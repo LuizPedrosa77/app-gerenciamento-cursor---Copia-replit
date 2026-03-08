@@ -38,6 +38,7 @@ export interface Account {
   trades: Trade[];
   withdrawals: Record<string, number>;
   meta?: number;
+  monthlyGoal?: number;
 }
 
 export interface GPFXState {

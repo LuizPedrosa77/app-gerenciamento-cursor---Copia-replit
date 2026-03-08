@@ -30,8 +30,11 @@ function Sparkline({ trades }: SparklineProps) {
 export function ActiveAccountCard() {
   const { state, activeAcc } = useGPFX();
   const balance = getAccountBalance(activeAcc);
-  const now = new Date();
   const monthPnl = getMonthPnl(activeAcc, state.activeYear, state.activeMonth);
+  const goal = activeAcc.monthlyGoal || 0;
+  const hasGoal = goal > 0;
+  const goalPct = hasGoal ? Math.min(100, Math.max(0, (monthPnl / goal) * 100)) : 0;
+  const goalBarColor = goalPct >= 100 ? '#00d395' : goalPct >= 71 ? '#3b82f6' : goalPct >= 41 ? '#f59e0b' : '#ff4d4d';
 
   return (
     <div className="mx-3 p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -51,6 +54,20 @@ export function ActiveAccountCard() {
           {monthPnl >= 0 ? '+' : ''}${fmtNum(monthPnl)}
         </span>
       </div>
+
+      {/* Mini Meta Bar */}
+      {hasGoal && (
+        <div className="mb-2">
+          <div className="flex items-center justify-between mb-0.5">
+            <span className="text-[10px] font-bold" style={{ color: '#475569' }}>Meta do mês</span>
+            <span className="text-[10px] font-bold" style={{ color: goalBarColor }}>{goalPct.toFixed(0)}% atingido</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#30363d' }}>
+            <div style={{ width: goalPct + '%', background: goalBarColor, transition: 'width 1s ease' }} className="h-full rounded-full" />
+          </div>
+        </div>
+      )}
+
       <Sparkline trades={activeAcc.trades.filter(t => t.year === state.activeYear && t.month === state.activeMonth)} />
     </div>
   );

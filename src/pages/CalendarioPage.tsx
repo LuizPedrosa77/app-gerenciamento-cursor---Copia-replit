@@ -371,6 +371,17 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
             {monthPnl >= 0 ? '+' : ''}${fmtNum(monthPnl)}
           </span>
           <span className="text-xs" style={{ color: 'var(--gpfx-text-muted)' }}>{daysOperated} dias operados</span>
+          {(() => {
+            const goal = acc.monthlyGoal || 0;
+            if (goal <= 0) return null;
+            const pct = Math.min(100, Math.max(0, (monthPnl / goal) * 100));
+            const pillColor = pct >= 100 ? '#00d395' : pct >= 71 ? '#3b82f6' : pct >= 41 ? '#f59e0b' : '#ff4d4d';
+            return (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: pillColor + '20', color: pillColor }}>
+                🎯 {pct.toFixed(0)}%
+              </span>
+            );
+          })()}
         </div>
         <button className="btn-gpfx btn-gpfx-primary text-xs" onClick={() => {
           const mm = String(calMonth + 1).padStart(2, '0');
