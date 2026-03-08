@@ -281,7 +281,7 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
     <GPFXContext.Provider value={{
       state, activeAcc, setState, save,
       switchAccount, addAccount, deleteAccount, renameAccount,
-      updateBalance, updateNotes, updateMeta,
+      updateBalance, updateNotes, updateMeta, updateMonthlyGoal,
       addTrade, addNewDay, updateTrade, deleteTrade, resetAccount,
       switchYear, switchMonth, updateWithdrawal,
       showSaved,
