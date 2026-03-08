@@ -869,6 +869,53 @@ export default function PlanilhaPage() {
           4. Selecione o arquivo abaixo
         </div>
       </Modal>
+
+      {/* Screenshot Modal */}
+      <Modal open={screenshotModal.open} onClose={() => setScreenshotModal({ open: false, trade: null })}
+        title={`📸 Screenshot — ${screenshotModal.trade?.pair || ''} ${screenshotModal.trade?.dir || ''} ${screenshotModal.trade?.date || ''}`}
+        footer={<>
+          <button className="btn-gpfx btn-gpfx-ghost" onClick={() => setScreenshotModal({ open: false, trade: null })}>Cancelar</button>
+          <button className="btn-gpfx btn-gpfx-primary" onClick={saveScreenshot}>Salvar</button>
+        </>}>
+        {!screenshotPreview ? (
+          <div
+            className="flex flex-col items-center justify-center p-8 rounded-lg cursor-pointer transition-colors hover:bg-[rgba(0,211,149,0.05)]"
+            style={{ border: '2px dashed rgba(0,211,149,0.3)', background: 'rgba(0,211,149,0.02)' }}
+            onClick={() => screenshotInputRef.current?.click()}
+          >
+            <ImageIcon size={40} style={{ color: '#00d395', opacity: 0.5 }} />
+            <div className="text-sm font-bold mt-3" style={{ color: '#c9d1d9' }}>Arraste a imagem aqui ou clique para selecionar</div>
+            <div className="text-[11px] mt-1" style={{ color: '#6e7681' }}>PNG, JPG, WEBP — máximo 5MB</div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <img src={screenshotPreview} alt="Preview" className="w-full rounded-lg object-contain max-h-[300px]" />
+            <button
+              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded self-start"
+              style={{ color: '#ff4d4d', background: 'rgba(255,77,77,0.1)' }}
+              onClick={() => setScreenshotPreview(null)}
+            >
+              <Trash2 size={12} /> Remover imagem
+            </button>
+          </div>
+        )}
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#8b949e' }}>Legenda (opcional)</label>
+          <textarea
+            className="gpfx-input w-full text-xs"
+            style={{ minHeight: 50, resize: 'vertical' }}
+            placeholder="Adicione uma nota sobre este setup..."
+            maxLength={200}
+            value={screenshotCaption}
+            onChange={e => setScreenshotCaption(e.target.value)}
+          />
+          <span className="text-[10px] text-right" style={{ color: '#484f58' }}>{screenshotCaption.length}/200</span>
+        </div>
+        <input type="file" ref={screenshotInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleScreenshotFile} />
+      </Modal>
+
+      {/* Lightbox */}
+      <Lightbox open={lightbox.open} onClose={() => setLightbox({ ...lightbox, open: false })} images={lightbox.images} initialIndex={lightbox.index} />
     </div>
   );
 }
