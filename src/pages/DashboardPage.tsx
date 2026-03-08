@@ -8,6 +8,7 @@ import {
   PieChart, Pie, Cell, AreaChart, Area, ReferenceLine, LabelList,
 } from 'recharts';
 import { AccountSelector, DateRangeFilter, DateRange, filterTradesByRange } from '@/components/GPFXFilters';
+import WeeklyReport from '@/components/WeeklyReport';
 
 /* ── Mini Sparkline for KPI cards ── */
 function MiniSparkline({ data, color }: { data: number[]; color: string }) {
@@ -344,6 +345,12 @@ export default function DashboardPage() {
         <KpiCard label="Win Rate Geral" value={stats.winRate + '%'} color="var(--gpfx-amber)" sparkData={stats.wrSpark} variation={{ pct: stats.wrSpark.length >= 2 ? stats.wrSpark[stats.wrSpark.length - 1] - stats.wrSpark[stats.wrSpark.length - 2] : 0, label: 'vs mês ant.' }} />
         <KpiCard label="Total de Trades" value={String(stats.totalTrades)} color="#60a5fa" />
       </div>
+
+      {/* Weekly Report */}
+      <WeeklyReport
+        trades={accFilter === 'all' ? state.accounts.flatMap(a => a.trades) : (state.accounts[parseInt(accFilter)]?.trades || [])}
+        accountName={accFilter === 'all' ? 'Todas as contas' : (state.accounts[parseInt(accFilter)]?.name || '')}
+      />
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
