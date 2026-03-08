@@ -13,6 +13,7 @@ interface GPFXContextType {
   updateBalance: (val: number) => void;
   updateNotes: (val: string) => void;
   updateMeta: (val: number) => void;
+  updateMonthlyGoal: (accIdx: number, val: number) => void;
   addTrade: (date?: string) => void;
   addNewDay: () => void;
   updateTrade: (id: string, field: string, val: any) => void;
