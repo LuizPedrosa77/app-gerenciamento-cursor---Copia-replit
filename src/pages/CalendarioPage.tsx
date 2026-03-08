@@ -541,6 +541,7 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
                 <thead>
                   <tr style={{ background: 'var(--gpfx-input-bg)' }}>
                     <th className="px-3 py-2 text-left font-bold" style={{ color: 'var(--gpfx-text-muted)' }}>#</th>
+                    <th className="px-3 py-2 text-left font-bold" style={{ color: 'var(--gpfx-text-muted)' }}>📸</th>
                     <th className="px-3 py-2 text-left font-bold" style={{ color: 'var(--gpfx-text-muted)' }}>Par</th>
                     <th className="px-3 py-2 text-left font-bold" style={{ color: 'var(--gpfx-text-muted)' }}>Direção</th>
                     <th className="px-3 py-2 text-left font-bold" style={{ color: 'var(--gpfx-text-muted)' }}>Resultado</th>
@@ -554,6 +555,23 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
                     return (
                       <tr key={t.id} style={{ background: t.result === 'WIN' ? 'rgba(0,211,149,0.05)' : 'rgba(255,77,77,0.05)', borderBottom: '1px solid var(--gpfx-border)' }}>
                         <td className="px-3 py-2 font-bold" style={{ color: 'var(--gpfx-text-muted)' }}>{i + 1}</td>
+                        <td className="px-3 py-2">
+                          {t.screenshot ? (
+                            <img
+                              src={t.screenshot.data}
+                              alt="Screenshot"
+                              className="w-12 h-12 rounded object-cover cursor-pointer border"
+                              style={{ borderColor: '#00d395' }}
+                              onClick={() => {
+                                const imgs = reviewTrades.filter(tr => tr.screenshot).map(tr => ({ data: tr.screenshot!.data, caption: tr.screenshot!.caption, tradePair: tr.pair }));
+                                const idx = imgs.findIndex(im => im.data === t.screenshot!.data);
+                                setLightbox({ open: true, images: imgs, index: Math.max(0, idx) });
+                              }}
+                            />
+                          ) : (
+                            <span className="text-[10px]" style={{ color: 'var(--gpfx-text-muted)' }}>—</span>
+                          )}
+                        </td>
                         <td className="px-3 py-2 font-bold" style={{ color: 'var(--gpfx-text-primary)' }}>{t.pair}</td>
                         <td className="px-3 py-2">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{
