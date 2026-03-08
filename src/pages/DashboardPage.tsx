@@ -203,6 +203,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Monthly Goal Card */}
+      <MonthlyGoalCard accFilter={accFilter} />
+
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Saldo Total" value={'$' + fmtNum(stats.totalBalance)} color="var(--gpfx-text-primary)" sparkData={stats.balCum} />
