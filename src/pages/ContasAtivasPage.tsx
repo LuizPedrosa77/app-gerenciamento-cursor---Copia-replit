@@ -154,7 +154,72 @@ export default function ContasAtivasPage({ onNavigatePlanilha }: ContasAtivasPro
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
+       </div>
+
+       {/* Divider */}
+       <div style={{ height: '1px', background: 'rgba(0,211,149,0.1)', margin: '32px 0' }} />
+
+       {/* Integrations Section */}
+       <div className="flex flex-col items-center justify-center py-12">
+         {/* Icon */}
+         <Plug size={64} color="#00d395" style={{ marginBottom: 24 }} />
+         
+         {/* Main text */}
+         <h2 
+           className="text-[28px] font-bold text-center mb-3"
+           style={{ color: '#e2e8f0' }}
+         >
+           🚧 Em Breve
+         </h2>
+         
+         {/* Secondary text */}
+         <p 
+           className="text-[14px] text-center mb-5"
+           style={{ 
+             color: 'rgba(255,255,255,0.4)',
+             maxWidth: 440
+           }}
+         >
+           Em breve será possível conectar diretamente sua conta de investimento ao sistema. Informe o servidor, login e senha investidor para sincronizar automaticamente todo o histórico de operações e gerenciar sua conta em tempo real.
+         </p>
+
+         {/* Platform badges */}
+         <div className="flex flex-wrap justify-center gap-2 mb-5">
+           {['MT5', 'MT4', 'cTrader', 'Tradovate', 'NinjaTrader'].map((platform) => (
+             <div
+               key={platform}
+               className="text-[9px] font-medium px-2 py-1 rounded-full"
+               style={{
+                 background: 'rgba(0,211,149,0.08)',
+                 border: '1px solid rgba(0,211,149,0.15)',
+                 color: '#00d395'
+               }}
+             >
+               {platform}
+             </div>
+           ))}
+         </div>
+         
+         {/* Development badge */}
+         <div 
+           className="flex items-center gap-2 px-4 py-1.5 rounded-full"
+           style={{
+             background: 'rgba(0,211,149,0.1)',
+             border: '1px solid rgba(0,211,149,0.25)',
+           }}
+         >
+           <div 
+             className="w-2 h-2 rounded-full animate-pulse"
+             style={{ background: '#00d395' }}
+           />
+           <span 
+             className="text-xs font-medium"
+             style={{ color: '#00d395' }}
+           >
+             Em desenvolvimento
+           </span>
+         </div>
+       </div>
+     </div>
+   );
+ }
