@@ -645,6 +645,36 @@ export default function PlanilhaPage() {
                           {t.hasVM && <RefreshCw size={14} style={{ color: '#f59e0b', opacity: 0.7 }} />}
                         </span>
 
+                        {/* Screenshot */}
+                        <div className="flex items-center justify-center gap-1">
+                          {t.screenshot ? (
+                            <img
+                              src={t.screenshot.data}
+                              alt="Screenshot"
+                              className="w-8 h-8 rounded object-cover cursor-pointer border"
+                              style={{ borderColor: '#00d395' }}
+                              onClick={() => setLightbox({ open: true, images: [{ data: t.screenshot!.data, caption: t.screenshot!.caption, tradePair: t.pair }], index: 0 })}
+                            />
+                          ) : (
+                            <button
+                              className="flex items-center justify-center w-7 h-7 rounded transition-colors hover:bg-[#21262d]"
+                              onClick={() => openScreenshotModal(t)}
+                              title="Adicionar screenshot"
+                            >
+                              <Camera size={14} style={{ color: '#6e7681' }} />
+                            </button>
+                          )}
+                          {t.screenshot && (
+                            <button
+                              className="flex items-center justify-center w-5 h-5 rounded transition-colors hover:bg-[#21262d]"
+                              onClick={() => openScreenshotModal(t)}
+                              title="Editar screenshot"
+                            >
+                              <Camera size={10} style={{ color: '#00d395' }} />
+                            </button>
+                          )}
+                        </div>
+
                         {/* Edit */}
                         <button
                           className="flex items-center justify-center w-7 h-7 rounded transition-colors hover:bg-[#21262d]"
