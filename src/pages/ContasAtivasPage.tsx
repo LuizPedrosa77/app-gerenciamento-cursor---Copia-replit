@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useGPFX } from '@/contexts/GPFXContext';
 import { Account, sumPnl, getMonthPnl, fmtNum, getTradePnl } from '@/lib/gpfx-utils';
 import { BarChart, Bar, ResponsiveContainer } from 'recharts';
+import { Target } from 'lucide-react';
 
 interface ContasAtivasProps {
   onNavigatePlanilha: (accountIndex: number) => void;
@@ -33,10 +35,12 @@ function Sparkline({ trades }: { trades: Account['trades'] }) {
 }
 
 export default function ContasAtivasPage({ onNavigatePlanilha }: ContasAtivasProps) {
-  const { state, switchAccount } = useGPFX();
+  const { state, switchAccount, updateMonthlyGoal } = useGPFX();
   const now = new Date();
   const curYear = now.getFullYear();
   const curMonth = now.getMonth();
+  const [editingGoal, setEditingGoal] = useState<number | null>(null);
+  const [goalValue, setGoalValue] = useState('');
 
   return (
     <div className="page-fade-in flex flex-col gap-5 max-w-[1400px] mx-auto p-6">
@@ -47,6 +51,7 @@ export default function ContasAtivasPage({ onNavigatePlanilha }: ContasAtivasPro
           const isActive = i === state.activeAccount;
           const balance = getAccountBalance(acc);
           const monthPnl = getMonthPnl(acc, curYear, curMonth);
+          const hasGoal = (acc.monthlyGoal || 0) > 0;
 
           return (
             <div
@@ -78,6 +83,62 @@ export default function ContasAtivasPage({ onNavigatePlanilha }: ContasAtivasPro
                 <span className="font-bold font-mono" style={{ color: monthPnl >= 0 ? '#00d395' : '#ff4d4d' }}>
                   {monthPnl >= 0 ? '+' : '-'}${fmtNum(Math.abs(monthPnl))}
                 </span>
+              </div>
+
+              {/* Monthly Goal */}
+              <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid var(--gpfx-border)' }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1" style={{ color: '#64748b' }}>
+                    <Target size={10} /> Meta Mensal
+                  </span>
+                </div>
+                {editingGoal === i ? (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs" style={{ color: 'var(--gpfx-text-muted)' }}>$</span>
+                    <input
+                      type="number"
+                      className="gpfx-input text-xs font-bold flex-1"
+                      style={{ height: 28 }}
+                      value={goalValue}
+                      onChange={e => setGoalValue(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          updateMonthlyGoal(i, parseFloat(goalValue) || 0);
+                          setEditingGoal(null);
+                        }
+                        if (e.key === 'Escape') setEditingGoal(null);
+                      }}
+                      autoFocus
+                      placeholder="Ex: 5000"
+                    />
+                    <button className="text-[10px] px-2 py-1 rounded font-bold" style={{ background: 'rgba(0,211,149,0.15)', color: '#00d395' }}
+                      onClick={() => { updateMonthlyGoal(i, parseFloat(goalValue) || 0); setEditingGoal(null); }}>✓</button>
+                  </div>
+                ) : hasGoal ? (
+                  <div className="flex items-center justify-between cursor-pointer" onClick={() => { setGoalValue(String(acc.monthlyGoal || '')); setEditingGoal(i); }}>
+                    <span className="text-xs font-bold" style={{ color: '#00d395' }}>${fmtNum(acc.monthlyGoal!)}</span>
+                    {(() => {
+                      const pct = Math.min(100, Math.max(0, (monthPnl / (acc.monthlyGoal || 1)) * 100));
+                      const barColor = pct >= 100 ? '#00d395' : pct >= 71 ? '#3b82f6' : pct >= 41 ? '#f59e0b' : '#ff4d4d';
+                      return (
+                        <div className="flex items-center gap-1.5 flex-1 ml-2">
+                          <div className="h-1.5 rounded-full overflow-hidden flex-1" style={{ background: '#30363d' }}>
+                            <div style={{ width: Math.min(100, Math.max(0, pct)) + '%', background: barColor, transition: 'width 1s ease' }} className="h-full rounded-full" />
+                          </div>
+                          <span className="text-[10px] font-bold" style={{ color: barColor }}>{pct.toFixed(0)}%</span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <button
+                    className="text-[11px] font-bold px-2 py-1 rounded w-full text-center"
+                    style={{ background: 'rgba(0,211,149,0.08)', color: '#00d395', border: '1px dashed rgba(0,211,149,0.3)' }}
+                    onClick={() => { setGoalValue(''); setEditingGoal(i); }}
+                  >
+                    + Definir meta
+                  </button>
+                )}
               </div>
 
               <Sparkline trades={acc.trades} />
