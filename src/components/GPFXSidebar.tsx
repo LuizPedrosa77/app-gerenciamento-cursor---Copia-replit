@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  LayoutDashboard, TrendingUp, Table2, BarChart3, Wallet,
+  LayoutDashboard, TrendingUp, ClipboardList, BarChart3, Wallet,
   Menu, X, Check, Moon, Sun, LineChart, ChevronLeft, ChevronRight,
-  CandlestickChart, CheckCircle
+  CandlestickChart, CheckCircle, CalendarDays
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ActiveAccountCard } from './ActiveAccountCard';
