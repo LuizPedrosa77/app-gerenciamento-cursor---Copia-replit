@@ -110,7 +110,7 @@ interface CalendarioPageProps {
 }
 
 export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) {
-  const { state, activeAcc, addTrade, setState, save } = useGPFX();
+  const { state, activeAcc, addTrade, setState, save, updateTrade } = useGPFX();
   const acc = activeAcc;
   const now = new Date();
 
@@ -124,6 +124,7 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
   });
   const [noteTimer, setNoteTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [lightbox, setLightbox] = useState<{ open: boolean; images: { data: string; caption: string; tradePair?: string }[]; index: number }>({ open: false, images: [], index: 0 });
+  const [screenshotModal, setScreenshotModal] = useState<{ open: boolean; trade: Trade | null }>({ open: false, trade: null });
 
   // Review day: default to yesterday
   const [reviewDate, setReviewDate] = useState(() => {
