@@ -471,6 +471,17 @@ export default function TradingViewPage() {
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      <Lightbox open={lightbox.open} onClose={() => setLightbox({ ...lightbox, open: false })} images={lightbox.images} initialIndex={lightbox.index} />
+
+      {/* Screenshot Modal */}
+      <ScreenshotModal
+        open={screenshotModal.open}
+        onClose={() => setScreenshotModal({ open: false, trade: null })}
+        trade={screenshotModal.trade}
+        onSave={(tradeId, screenshot) => updateTrade(tradeId, 'screenshot', screenshot)}
+      />
     </div>
   );
 }
