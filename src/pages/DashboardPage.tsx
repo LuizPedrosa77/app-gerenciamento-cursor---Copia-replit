@@ -197,7 +197,10 @@ export default function DashboardPage() {
     <div className="page-fade-in flex flex-col gap-5 max-w-[1400px] mx-auto p-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-extrabold" style={{ color: 'var(--gpfx-text-primary)' }}>Dashboard</h1>
-        <AccountFilter value={accFilter} onChange={setAccFilter} accounts={state.accounts} />
+        <div className="flex items-center gap-2 flex-wrap">
+          <AccountSelector value={accFilter} onChange={setAccFilter} accounts={state.accounts} />
+          <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        </div>
       </div>
 
       {/* KPI Grid */}
