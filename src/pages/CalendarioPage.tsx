@@ -571,7 +571,14 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
                               }}
                             />
                           ) : (
-                            <span className="text-[10px]" style={{ color: 'var(--gpfx-text-muted)' }}>—</span>
+                            <button
+                              className="flex items-center justify-center w-12 h-12 rounded transition-colors hover:bg-[rgba(0,211,149,0.1)]"
+                              style={{ border: '1px dashed rgba(0,211,149,0.3)' }}
+                              onClick={() => setScreenshotModal({ open: true, trade: t })}
+                              title="Adicionar screenshot"
+                            >
+                              <Camera size={16} style={{ color: '#6e7681' }} />
+                            </button>
                           )}
                         </td>
                         <td className="px-3 py-2 font-bold" style={{ color: 'var(--gpfx-text-primary)' }}>{t.pair}</td>
