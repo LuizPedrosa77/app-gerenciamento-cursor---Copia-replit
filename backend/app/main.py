@@ -2,11 +2,13 @@
 Gustavo Pedrosa FX - API principal.
 Ponto de entrada: uvicorn app.main:app
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
+from app.core.database import get_async_session
+from app.websocket.replay import handle_replay_websocket
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -26,6 +28,25 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.websocket("/ws/replay/{session_id}")
+async def websocket_replay(
+    websocket: WebSocket,
+    session_id: str,
+    token: str | None = Query(None),
+    db=Depends(get_async_session),
+):
+    """WebSocket endpoint for market replay sessions."""
+    import uuid
+    
+    try:
+        session_uuid = uuid.UUID(session_id)
+    except ValueError:
+        await websocket.close(code=4000, reason="Invalid session ID")
+        return
+    
+    await handle_replay_websocket(websocket, session_uuid, token, db)
 
 
 @app.get("/")

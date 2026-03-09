@@ -38,6 +38,12 @@ from .market_data_service import (
     save_tick,
     update_replay_session,
 )
+from .replay_service import (
+    CandleBuilder,
+    ReplayEngine,
+    get_replay_engine,
+    remove_replay_engine,
+)
 from .storage_service import (
     delete_screenshot,
     get_screenshot_url,
@@ -94,6 +100,11 @@ __all__ = [
     "save_candle",
     "save_tick",
     "update_replay_session",
+    # Replay service
+    "CandleBuilder",
+    "ReplayEngine",
+    "get_replay_engine",
+    "remove_replay_engine",
     # Storage service
     "delete_screenshot",
     "get_screenshot_url",
