@@ -1,0 +1,60 @@
+# Backend + PostgreSQL + MinIO para desenvolvimento local
+# Uso: docker compose -f docker-compose.backend.yml up -d
+
+version: "3.8"
+
+services:
+  gpfx-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gpfx
+    ports:
+      - "5432:5432"
+    volumes:
+      - gpfx_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  gpfx-minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - gpfx_minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  gpfx-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@gpfx-postgres:5432/gpfx
+      MINIO_ENDPOINT: gpfx-minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      DEBUG: "true"
+    depends_on:
+      gpfx-postgres:
+        condition: service_healthy
+      gpfx-minio:
+        condition: service_healthy
+
+volumes:
+  gpfx_pgdata:
+  gpfx_minio:

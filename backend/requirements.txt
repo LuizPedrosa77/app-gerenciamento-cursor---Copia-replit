@@ -1,0 +1,27 @@
+# Gustavo Pedrosa FX - Backend API
+# Python 3.11+
+
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Database
+sqlalchemy>=2.0.36
+alembic>=1.14.0
+psycopg2-binary>=2.9.10
+
+# Auth & Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.17
+
+# Validation & Utils
+pydantic[email]>=2.10.0
+pydantic-settings>=2.6.0
+email-validator>=2.0.0
+
+# Storage (MinIO/S3)
+minio>=7.2.0
+
+# Crypto (credenciais broker)
+cryptography>=44.0.0
