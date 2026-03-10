@@ -29,6 +29,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     full_name: str | None = None
+    cpf: str | None = Field(None, min_length=11, max_length=11, pattern=r'^\d{11}$')
 
 
 class RefreshRequest(BaseModel):
@@ -40,6 +41,7 @@ class UserInAuth(BaseModel):
     id: UUID
     email: str
     full_name: str | None
+    cpf: str | None
     is_active: bool
 
     model_config = {"from_attributes": True}

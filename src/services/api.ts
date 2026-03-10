@@ -1,25 +1,7 @@
 /**
  * Cliente HTTP com interceptors para autenticação e tratamento de erros
  */
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-
-// Import dinâmica do axios
-let axios: any;
-try {
-  axios = require('axios');
-} catch (error) {
-  console.error('Axios not found, please install: npm install axios');
-  // Fallback básico para não quebrar a build
-  axios = {
-    create: () => ({
-      interceptors: { request: { use: () => {} }, response: { use: () => {} } },
-      get: () => Promise.resolve({ data: [] }),
-      post: () => Promise.resolve({ data: [] }),
-      put: () => Promise.resolve({ data: [] }),
-      delete: () => Promise.resolve({ data: [] }),
-    })
-  };
-}
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Configuração base da API
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';

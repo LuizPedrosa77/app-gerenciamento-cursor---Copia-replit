@@ -9,11 +9,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_async_session
+from app.dependencies import get_current_user, get_async_session
 from app.models.user import User
+from app.services.ai_service import AIService
 from pydantic import BaseModel
 
 router = APIRouter()
+ai_service = AIService()
 
 
 class AIRequest(BaseModel):
@@ -49,11 +51,34 @@ async def ai_chat(
     - Múltiplos modelos
     """
     
-    if not api_key and not current_user.plan:
+    if not api_key:
         raise HTTPException(
             status_code=403,
-            detail="API Key required or no active plan found"
+            detail="API Key required for AI access"
         )
+    
+    # Build context from user data
+    from app.models.workspace import Workspace
+    from sqlalchemy import select
+    
+    # Get user's workspace
+    workspace_result = await db.execute(
+        select(Workspace).where(Workspace.owner_user_id == current_user.id)
+    )
+    workspace = workspace_result.scalar_one_or_none()
+    
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    
+    # Build trading context
+    context = ai_service.build_trading_context(
+        str(workspace.id), 
+        str(current_user.id), 
+        db
+    )
+    
+    if request.context:
+        context.update(request.context)
     
     async def generate_stream():
         """Generator para streaming SSE."""
@@ -68,44 +93,27 @@ async def ai_chat(
                 metadata={"status": "connected"}
             ).model_dump())}\n\n"
             
-            # Simulate AI processing (replace with actual AI integration)
-            import asyncio
-            
-            # Process the message
-            await asyncio.sleep(1)
-            
-            yield f"data: {json.dumps(AIResponse(
-                id=conversation_id,
-                type="message",
-                content="Analisando sua solicitação...",
-                metadata={"status": "processing"}
-            ).model_dump())}\n\n"
-            
-            await asyncio.sleep(2)
-            
-            # Generate response based on context
-            response_text = generate_ai_response(request.message, request.context)
-            
-            # Stream the response word by word
-            words = response_text.split()
-            current_text = ""
-            
-            for word in words:
-                current_text += word + " "
+            # Generate AI response using real OpenAI
+            async for chunk in ai_service.chat_completion_stream(
+                message=request.message,
+                context=context,
+                model=request.model,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens
+            ):
                 yield f"data: {json.dumps(AIResponse(
                     id=conversation_id,
                     type="message",
-                    content=current_text.strip(),
+                    content=chunk,
                     metadata={"status": "streaming"}
                 ).model_dump())}\n\n"
-                await asyncio.sleep(0.1)
             
             # Send completion message
             yield f"data: {json.dumps(AIResponse(
                 id=conversation_id,
                 type="done",
                 content=None,
-                metadata={"status": "completed", "total_words": len(words)}
+                metadata={"status": "completed"}
             ).model_dump())}\n\n"
             
         except Exception as e:
@@ -128,103 +136,19 @@ async def ai_chat(
         )
     else:
         # Non-streaming response
-        response_text = generate_ai_response(request.message, request.context)
+        response_text = await ai_service.chat_completion(
+            message=request.message,
+            context=context,
+            model=request.model,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens
+        )
         return AIResponse(
             id=str(uuid.uuid4()),
             type="message",
             content=response_text,
             metadata={"status": "completed"}
         )
-
-
-def generate_ai_response(message: str, context: dict | None = None) -> str:
-    """
-    Gera resposta da IA baseada na mensagem e contexto.
-    Esta é uma implementação simulada - substituir com integração real.
-    """
-    
-    # Simple keyword-based responses for demo
-    message_lower = message.lower()
-    
-    if "análise" in message_lower or "analise" in message_lower:
-        return """Com base na sua solicitação de análise, aqui estão os principais pontos:
-
-📊 **Análise de Performance:**
-- Win Rate atual: 68.5%
-- Fator de Lucro: 1.42
-- Drawdown máximo: -12.3%
-- Sharpe Ratio: 1.85
-
-💡 **Recomendações:**
-1. Considere reduzir o tamanho da posição em pares voláteis
-2. Mantenha o stop-loss mínimo de 1.5%
-3. Dê preferência a operações entre 14h-17h (maior probabilidade)
-
-🎯 **Próximos Passos:**
-- Focar em estratégias de breakout em EUR/USD
-- Implementar trailing stops para proteger ganhos
-- Revisar operações com perdas > 2% para identificar padrões
-
-Posso detalhar qualquer um desses pontos se desejar."""
-    
-    elif "meta" in message_lower or "objetivo" in message_lower:
-        return """🎯 **Análise de Metas:**
-
-**Meta Mensal Atual:** R$ 5.000
-**Progresso:** R$ 3.450 (69%)
-**Faltam:** R$ 1.550
-**Dias Restantes:** 8
-
-📈 **Projeção:**
-- Ritmo atual: R$ 431/dia
-- Ritmo necessário: R$ 194/dia ✅
-- Probabilidade de atingir: 87%
-
-💡 **Sugestões:**
-1. Meta é totalmente alcançável com ritmo atual
-2. Considere aumentar para R$ 6.000 no próximo mês
-3. Mantenha a consistência nas próximas semanas
-
-**Recomendação:** Ajuste stop-loss para 1.2% para otimizar resultados"""
-    
-    elif "risco" in message_lower or "drawdown" in message_lower:
-        return """⚠️ **Análise de Risco:**
-
-**Métricas Atuais:**
-- Drawdown Máximo: -12.3%
-- VaR Diário (95%): R$ 450
-- Recuperação Média: 4.2 dias
-- Fator de Recuperação: 2.1
-
-🔍 **Análise:**
-Seu perfil de risco é **MODERADO-AGRESSIVO** com boa capacidade de recuperação.
-
-**Recomendações:**
-1. **Posição Máxima:** 2% do capital
-2. **Stop Loss:** Mínimo 1.5%, ideal 2%
-3. **Diversificação:** Operar em 3-4 pares principais
-4. **Horários:** Evitar notícias de alta volatilidade
-
-**Sinal de Alerta:** Reduza tamanho se drawdown > 15%"""
-    
-    else:
-        return """Olá! Sou a IA especialista em trading do Gustavo Pedrosa FX.
-
-🤖 **Como posso ajudar:**
-- 📊 Análise de performance e estatísticas
-- 🎯 Definição e acompanhamento de metas  
-- ⚠️ Gestão de risco e drawdown
-- 💡 Estratégias e recomendações
-- 📈 Projeções e forward testing
-- 🔍 Análise de padrões de trades
-
-**Exemplos:**
-- "Faça uma análise completa da minha performance"
-- "Qual a melhor estratégia para EUR/USD?"
-- "Estou no caminho certo para atingir minha meta?"
-- "Como reduzir meu drawdown?"
-
-Digite sua dúvida ou solicitação! 🚀"""
 
 
 @router.get("/ai/models")
@@ -250,24 +174,3 @@ async def get_available_models(
             }
         ]
     }
-
-
-@router.post("/ai/conversation/save")
-async def save_conversation(
-    conversation_data: dict,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
-) -> Any:
-    """Salva conversa com IA no histórico."""
-    # Implementation would save to AIConversation table
-    pass
-
-
-@router.get("/ai/conversations")
-async def get_conversations(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session),
-) -> Any:
-    """Lista conversas salvas com IA."""
-    # Implementation would fetch from AIConversation table
-    pass
