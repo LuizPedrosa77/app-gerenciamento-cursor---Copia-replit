@@ -25,3 +25,6 @@ minio>=7.2.0
 
 # Crypto (credenciais broker)
 cryptography>=44.0.0
+
+# AI Integration
+openai>=1.0.0

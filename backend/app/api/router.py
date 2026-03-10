@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     accounts,
     ai,
+    ai_trade,
     auth,
     brokers,
     daily_notes,
@@ -36,3 +37,4 @@ api_router.include_router(internal.router, prefix="/api/v1", tags=["internal"])
 api_router.include_router(profiles.router, prefix="/api/v1", tags=["profiles"])
 api_router.include_router(reports.router, prefix="/api/v1", tags=["reports"])
 api_router.include_router(ai.router, prefix="/api/v1", tags=["ai"])
+api_router.include_router(ai_trade.router, tags=["ai-trade"])

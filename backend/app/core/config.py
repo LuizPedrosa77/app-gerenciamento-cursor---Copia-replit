@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = False
     MINIO_PUBLIC_URL: str | None = None  # URL pública do MinIO (ex: https://minio.fx.hubnexusai.com)
 
+    # OpenAI - IA do Trade
+    OPENAI_API_KEY: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:
