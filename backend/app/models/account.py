@@ -35,6 +35,8 @@ class TradingAccount(Base):
     initial_balance: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
     current_balance: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
     leverage: Mapped[int | None] = mapped_column(nullable=True)
+    monthly_goal_amount: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
+    biweekly_goal_amount: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
     )

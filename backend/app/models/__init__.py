@@ -14,6 +14,16 @@ from app.models.market_data import (
     Tick,
 )
 from app.models.note import DailyNote
+from app.models.profile import (
+    AIConversation,
+    Plan,
+    PlanType,
+    Referral,
+    ReferralCode,
+    ReferralStatus,
+    UserProfile,
+    UserPlan,
+)
 from app.models.trade import Trade, TradeTag, TradeTagLink, Withdrawal
 from app.models.user import User, Workspace, WorkspaceMember, WorkspaceRole
 
@@ -39,4 +49,12 @@ __all__ = [
     "MarketDataSourceType",
     "ReplayMode",
     "ReplayStatus",
+    "UserProfile",
+    "Plan",
+    "PlanType",
+    "UserPlan",
+    "ReferralCode",
+    "Referral",
+    "ReferralStatus",
+    "AIConversation",
 ]

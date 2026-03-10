@@ -5,13 +5,16 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     accounts,
+    ai,
     auth,
     brokers,
     daily_notes,
     dashboard,
     health,
     internal,
+    profiles,
     replay,
+    reports,
     screenshot,
     trades,
     withdrawals,
@@ -30,3 +33,6 @@ api_router.include_router(brokers.router, prefix="/api/v1", tags=["brokers"])
 api_router.include_router(replay.router, prefix="/api/v1", tags=["replay"])
 api_router.include_router(dashboard.router, prefix="/api/v1", tags=["dashboard"])
 api_router.include_router(internal.router, prefix="/api/v1", tags=["internal"])
+api_router.include_router(profiles.router, prefix="/api/v1", tags=["profiles"])
+api_router.include_router(reports.router, prefix="/api/v1", tags=["reports"])
+api_router.include_router(ai.router, prefix="/api/v1", tags=["ai"])

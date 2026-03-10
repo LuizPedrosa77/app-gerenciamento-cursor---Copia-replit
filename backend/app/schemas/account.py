@@ -17,6 +17,8 @@ class AccountCreate(BaseModel):
     current_balance: Decimal | None = None  # se None, usa initial_balance
     leverage: int | None = None
     external_account_id: str | None = None
+    monthly_goal_amount: Decimal = Field(default=Decimal("0"), ge=0)
+    biweekly_goal_amount: Decimal = Field(default=Decimal("0"), ge=0)
 
 
 class AccountUpdate(BaseModel):
@@ -27,6 +29,8 @@ class AccountUpdate(BaseModel):
     current_balance: Decimal | None = None
     leverage: int | None = None
     closed_at: datetime | None = None
+    monthly_goal_amount: Decimal | None = None
+    biweekly_goal_amount: Decimal | None = None
 
 
 class AccountRead(BaseModel):
@@ -41,6 +45,8 @@ class AccountRead(BaseModel):
     initial_balance: Decimal
     current_balance: Decimal
     leverage: int | None
+    monthly_goal_amount: Decimal
+    biweekly_goal_amount: Decimal
     created_at: datetime
     updated_at: datetime
     closed_at: datetime | None

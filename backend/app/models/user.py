@@ -49,6 +49,15 @@ class User(Base):
     workspace_memberships: Mapped[list["WorkspaceMember"]] = relationship(
         "WorkspaceMember", back_populates="user"
     )
+    profile: Mapped["UserProfile"] = relationship(
+        "UserProfile", back_populates="user", cascade="all, delete-orphan"
+    )
+    plan: Mapped["UserPlan"] = relationship(
+        "UserPlan", back_populates="user", cascade="all, delete-orphan"
+    )
+    referral_code: Mapped["ReferralCode"] = relationship(
+        "ReferralCode", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Workspace(Base):

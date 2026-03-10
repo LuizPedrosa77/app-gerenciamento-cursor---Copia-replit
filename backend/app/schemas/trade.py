@@ -38,6 +38,20 @@ class TradeCreate(BaseModel):
     comment: str | None = None
     external_trade_id: str | None = None
     tag_ids: list[UUID] = Field(default_factory=list)
+    # VM fields
+    has_vm: bool = Field(default=False)
+    vm_lots: Decimal = Field(default=Decimal("0"))
+    vm_result: str = Field(default="WIN")
+    vm_net_profit: Decimal = Field(default=Decimal("0"))
+    # Frontend compatibility
+    pair: str = Field(..., min_length=1, max_length=50)
+    dir: str = Field(..., pattern="^(BUY|SELL)$")
+    lots: Decimal = Field(..., gt=0)
+    result: str = Field(default="WIN")
+    pnl: Decimal = Field(default=Decimal("0"))
+    date: str | None = None
+    year: int | None = None
+    month: int | None = None
 
 
 class TradeUpdate(BaseModel):
@@ -58,6 +72,20 @@ class TradeUpdate(BaseModel):
     comment: str | None = None
     screenshot_caption: str | None = None
     tag_ids: list[UUID] | None = None
+    # VM fields
+    has_vm: bool | None = None
+    vm_lots: Decimal | None = None
+    vm_result: str | None = None
+    vm_net_profit: Decimal | None = None
+    # Frontend compatibility
+    pair: str | None = None
+    dir: str | None = Field(None, pattern="^(BUY|SELL)$")
+    lots: Decimal | None = None
+    result: str | None = None
+    pnl: Decimal | None = None
+    date: str | None = None
+    year: int | None = None
+    month: int | None = None
 
 
 class TradeRead(BaseModel):
@@ -86,6 +114,20 @@ class TradeRead(BaseModel):
     comment: str | None
     screenshot_url: str | None
     screenshot_caption: str | None
+    # VM fields
+    has_vm: bool
+    vm_lots: Decimal
+    vm_result: str
+    vm_net_profit: Decimal
+    # Frontend compatibility
+    pnl: Decimal
+    pair: str
+    dir: str
+    lots: Decimal
+    result: str
+    date: str | None
+    year: int | None
+    month: int | None
     created_at: datetime
     updated_at: datetime
     tags: list[TradeTagRead] = Field(default_factory=list)

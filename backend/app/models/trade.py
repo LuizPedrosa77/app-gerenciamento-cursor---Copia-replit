@@ -45,6 +45,11 @@ class Trade(Base):
     taxes: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
     gross_profit: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
     net_profit: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
+    # Virtual Manual (VM) fields
+    has_vm: Mapped[bool] = mapped_column(default=False, nullable=False)
+    vm_lots: Mapped[Decimal] = mapped_column(Numeric(20, 4), default=0, nullable=False)
+    vm_result: Mapped[str] = mapped_column(String(10), default="WIN", nullable=False)
+    vm_net_profit: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
     profit_currency: Mapped[str] = mapped_column(String(10), default="USD", nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="closed", nullable=False)
     magic_number: Mapped[int | None] = mapped_column(nullable=True)
@@ -52,6 +57,16 @@ class Trade(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     screenshot_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     screenshot_caption: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # Legacy field for frontend compatibility
+    pnl: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0, nullable=False)
+    # Frontend compatibility fields
+    pair: Mapped[str] = mapped_column(String(50), nullable=False)
+    dir: Mapped[str] = mapped_column(String(10), nullable=False)
+    lots: Mapped[Decimal] = mapped_column(Numeric(20, 4), nullable=False)
+    result: Mapped[str] = mapped_column(String(10), default="WIN", nullable=False)
+    date: Mapped[str] = mapped_column(String(20), nullable=True)
+    year: Mapped[int] = mapped_column(nullable=True)
+    month: Mapped[int] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
     )
