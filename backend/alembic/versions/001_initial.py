@@ -24,6 +24,7 @@ def upgrade() -> None:
             full_name VARCHAR(255) NOT NULL,
             cpf VARCHAR(14) UNIQUE,
             hashed_password VARCHAR(255) NOT NULL,
+            google_id VARCHAR(255) UNIQUE NULL,
             is_active BOOLEAN DEFAULT TRUE,
             is_superuser BOOLEAN DEFAULT FALSE,
             plan VARCHAR(50) DEFAULT 'basic',
