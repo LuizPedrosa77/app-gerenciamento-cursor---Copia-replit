@@ -46,7 +46,6 @@ from .replay_service import (
 )
 from .storage_service import (
     delete_screenshot,
-    get_screenshot_url,
     upload_screenshot,
 )
 from .dashboard_service import (
@@ -128,7 +127,6 @@ __all__ = [
     "weekly_report",
     # Storage service
     "delete_screenshot",
-    "get_screenshot_url",
     "upload_screenshot",
     # Trade service
     "create_daily_note",
