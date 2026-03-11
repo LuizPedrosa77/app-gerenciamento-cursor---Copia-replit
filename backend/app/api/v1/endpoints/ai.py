@@ -88,9 +88,9 @@ async def ai_chat(
             # Send initial connection message
             yield f"data: {json.dumps(AIResponse(
                 id=conversation_id,
-                type="message",
-                content="Conectado à IA do Trade...",
-                metadata={"status": "connected"}
+                type='message',
+                content='Conectado à IA do Trade...',
+                metadata={'status': 'connected'}
             ).model_dump())}\n\n"
             
             # Generate AI response using real OpenAI
@@ -103,25 +103,25 @@ async def ai_chat(
             ):
                 yield f"data: {json.dumps(AIResponse(
                     id=conversation_id,
-                    type="message",
+                    type='message',
                     content=chunk,
-                    metadata={"status": "streaming"}
+                    metadata={'status': 'streaming'}
                 ).model_dump())}\n\n"
             
             # Send completion message
             yield f"data: {json.dumps(AIResponse(
                 id=conversation_id,
-                type="done",
+                type='done',
                 content=None,
-                metadata={"status": "completed"}
+                metadata={'status': 'completed'}
             ).model_dump())}\n\n"
             
         except Exception as e:
             yield f"data: {json.dumps(AIResponse(
                 id=conversation_id,
-                type="error",
+                type='error',
                 content=str(e),
-                metadata={"status": "error"}
+                metadata={'status': 'error'}
             ).model_dump())}\n\n"
     
     if request.stream:
