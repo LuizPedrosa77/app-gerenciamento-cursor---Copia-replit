@@ -10,7 +10,7 @@ from .account_service import (
     update_account,
 )
 from .auth_service import (
-    login as auth_login,
+    login,
     refresh_tokens,
     register,
 )
@@ -70,12 +70,16 @@ from .trade_service import (
     get_daily_note_by_date,
     get_daily_note_by_id,
     get_trade,
+    get_withdrawal,
     list_daily_notes,
     list_trades,
     list_withdrawals,
+    set_trade_screenshot,
     update_daily_note,
     update_trade,
 )
+from .ai_service import ai_service
+from .compatibility_service import compatibility_service
 
 __all__ = [
     # Account service
@@ -85,7 +89,7 @@ __all__ = [
     "list_accounts",
     "update_account",
     # Auth service
-    "auth_login",
+    "login",
     "refresh_tokens",
     "register",
     # Broker service
@@ -139,9 +143,15 @@ __all__ = [
     "get_daily_note_by_date",
     "get_daily_note_by_id",
     "get_trade",
+    "get_withdrawal",
     "list_daily_notes",
     "list_trades",
     "list_withdrawals",
+    "set_trade_screenshot",
     "update_daily_note",
     "update_trade",
+    # AI service
+    "ai_service",
+    # Compatibility service
+    "compatibility_service",
 ]
