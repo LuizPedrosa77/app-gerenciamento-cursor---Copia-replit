@@ -32,9 +32,9 @@ services:
       - SECRET_KEY=gpfx-secret-key-2026-production
       - INTERNAL_API_KEY=gpfx-internal-key-2026
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=gpfx-minio-user
-      - MINIO_SECRET_KEY=gpfx-minio-senha-2026
+      - MINIO_ENDPOINT=minio.hubnexusai.com
+      - MINIO_ACCESS_KEY=574184765162
+      - MINIO_SECRET_KEY=8332bdeca11c80fe91685492
       - REDIS_URL=redis://redis:6379/5
       - N8N_WEBHOOK_URL=https://n8n.hubnexusai.com/webhook
     deploy:
@@ -59,8 +59,8 @@ services:
     networks:
       - digital_network
     environment:
-      - MINIO_ROOT_USER=gpfx-minio-user
-      - MINIO_ROOT_PASSWORD=gpfx-minio-senha-2026
+      - MINIO_ROOT_USER=hubnexusai
+      - MINIO_ROOT_PASSWORD=hub123nexusai
     command: server /data --console-address ":9001"
     deploy:
       mode: replicated
