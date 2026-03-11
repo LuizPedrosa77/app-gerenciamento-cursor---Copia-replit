@@ -11,7 +11,23 @@ api_router.include_router(
     tags=["auth"]
 )
 
+# Import and include accounts router
+from app.api.v1.endpoints import accounts
+api_router.include_router(
+    accounts.router,
+    prefix="/accounts",
+    tags=["accounts"]
+)
+
+# Import and include trades router
+from app.api.v1.endpoints import trades
+api_router.include_router(
+    trades.router,
+    prefix="/trades",
+    tags=["trades"]
+)
+
 # Add endpoint routers here when they are created
 # Example:
-# from app.api.v1.endpoints.accounts import router as accounts_router
-# api_router.include_router(accounts_router, prefix="/accounts", tags=["accounts"])
+# from app.api.v1.endpoints.analytics import router as analytics_router
+# api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
