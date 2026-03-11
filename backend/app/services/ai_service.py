@@ -109,7 +109,8 @@ class AIService:
                 if chunk.choices:
                     content = chunk.choices[0].delta.get("content", "")
                     if content:
-                        yield f"data: {{\"type\": \"chunk\", \"content\": \"{content.replace('\"', '\\\"')}\"}}\n\n"
+                        safe_content = content.replace('"', '\\"')
+                        yield f'data: {{"type": "chunk", "content": "{safe_content}"}}\n\n'
 
             # Sinal de conclusão
             yield "data: {\"type\": \"done\"}\n\n"

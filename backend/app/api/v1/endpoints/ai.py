@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_current_user, get_async_session
+from app.dependencies import get_current_user
 from app.models.user import User
 from app.services.ai_service import AIService
 from pydantic import BaseModel
@@ -86,12 +86,13 @@ async def ai_chat(
             conversation_id = str(uuid.uuid4())
             
             # Send initial connection message
-            yield f"data: {json.dumps(AIResponse(
+            response_obj = AIResponse(
                 id=conversation_id,
                 type='message',
                 content='Conectado à IA do Trade...',
                 metadata={'status': 'connected'}
-            ).model_dump())}\n\n"
+            )
+            yield f"data: {json.dumps(response_obj.model_dump())}\n\n"
             
             # Generate AI response using real OpenAI
             async for chunk in ai_service.chat_completion_stream(
@@ -101,28 +102,31 @@ async def ai_chat(
                 temperature=request.temperature,
                 max_tokens=request.max_tokens
             ):
-                yield f"data: {json.dumps(AIResponse(
+                _resp = AIResponse(
                     id=conversation_id,
                     type='message',
                     content=chunk,
                     metadata={'status': 'streaming'}
-                ).model_dump())}\n\n"
+                )
+                yield f"data: {json.dumps(_resp.model_dump())}\n\n"
             
             # Send completion message
-            yield f"data: {json.dumps(AIResponse(
+            _resp = AIResponse(
                 id=conversation_id,
                 type='done',
                 content=None,
                 metadata={'status': 'completed'}
-            ).model_dump())}\n\n"
+            )
+            yield f"data: {json.dumps(_resp.model_dump())}\n\n"
             
         except Exception as e:
-            yield f"data: {json.dumps(AIResponse(
+            _resp = AIResponse(
                 id=conversation_id,
                 type='error',
                 content=str(e),
                 metadata={'status': 'error'}
-            ).model_dump())}\n\n"
+            )
+            yield f"data: {json.dumps(_resp.model_dump())}\n\n"
     
     if request.stream:
         return StreamingResponse(

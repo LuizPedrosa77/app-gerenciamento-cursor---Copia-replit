@@ -64,8 +64,6 @@ def upgrade() -> None:
         sa.Index('ix_broker_symbols_symbol', 'symbol'),
     )
     
-    # Add broker_connection_id to trading_accounts table
-    op.add_column('trading_accounts', sa.Column('broker_connection_id', postgresql.UUID(as_uuid=True), nullable=True))
     op.create_foreign_key(
         'fk_trading_accounts_broker_connection_id',
         'trading_accounts', 'broker_connections',
