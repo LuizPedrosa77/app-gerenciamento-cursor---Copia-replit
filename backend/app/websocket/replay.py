@@ -9,9 +9,9 @@ from decimal import Decimal
 from typing import Any, Dict, Optional
 
 from fastapi import WebSocket, WebSocketDisconnect, Query, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.models import ReplaySession, ReplayStatus, User, Workspace
 from app.services import market_data_service
 from app.dependencies import get_current_user_from_token
@@ -102,7 +102,7 @@ async def handle_replay_websocket(
     websocket: WebSocket,
     session_id: uuid.UUID,
     token: Optional[str] = Query(None),
-    db: AsyncSession = None,
+    db: Session = None,
 ) -> None:
     """
     Handle WebSocket connection for replay session.

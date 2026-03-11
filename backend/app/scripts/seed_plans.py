@@ -6,13 +6,13 @@ from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_async_session
+from app.core.database import AsyncSessionLocal
 from app.models.profile import Plan, PlanType
 
 
 async def seed_plans():
     """Popula planos padrão."""
-    async with get_async_session() as db:
+    async with AsyncSessionLocal() as db:
         # Verificar se planos já existem
         from sqlalchemy import select
         result = await db.execute(select(Plan))

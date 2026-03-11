@@ -5,7 +5,7 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta
 
-from app.core.database import get_async_session
+from app.core.database import AsyncSessionLocal
 from app.services.ai_service import ai_service
 
 
@@ -16,7 +16,7 @@ async def test_ai_service():
     workspace_id = str(uuid.uuid4())
     user_id = str(uuid.uuid4())
     
-    async with get_async_session() as db:
+    async with AsyncSessionLocal() as db:
         print("🧪 Testando AI Service...")
         print(f"Workspace ID: {workspace_id}")
         print(f"User ID: {user_id}")

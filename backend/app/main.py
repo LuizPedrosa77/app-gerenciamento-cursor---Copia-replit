@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.websocket.replay import handle_replay_websocket
 
 app = FastAPI(
@@ -35,7 +35,7 @@ async def websocket_replay(
     websocket: WebSocket,
     session_id: str,
     token: str | None = Query(None),
-    db=Depends(get_async_session),
+    db=Depends(get_db),
 ):
     """WebSocket endpoint for market replay sessions."""
     import uuid

@@ -7,8 +7,9 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.core.database import get_async_session
+from app.core.database import AsyncSessionLocal
 from app.models import BrokerConnection, Trade, TradingAccount
 from app.services import broker_service
 
@@ -35,7 +36,7 @@ async def sync_account_history(
     """
     try:
         # Get database session
-        async for db in get_async_session():
+        async with AsyncSessionLocal() as db:
             # Get account with broker connection
             account_query = (
                 select(TradingAccount)
@@ -285,7 +286,7 @@ async def sync_all_accounts(
         Dict with overall sync results
     """
     try:
-        async for db in get_async_session():
+        async with AsyncSessionLocal() as db:
             # Get all active accounts with broker connections
             accounts_query = (
                 select(TradingAccount)
@@ -465,7 +466,3 @@ async def cleanup_old_sync_logs(
             "success": False,
             "error": str(e),
         }
-
-
-# Helper function for selectinload
-from sqlalchemy.orm import selectinload

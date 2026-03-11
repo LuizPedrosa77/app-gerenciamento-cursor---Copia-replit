@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.core.database import get_async_session
-from app.dependencies import DbSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.tasks.sync_jobs import (
     cleanup_old_sync_logs,
     sync_account_history,
@@ -77,7 +77,7 @@ async def sync_account(
     account_id: UUID,
     request: SyncAccountRequest,
     api_key: str = Depends(verify_api_key),
-    db: DbSession = None,
+    db: AsyncSession = Depends(get_async_session),
 ):
     """
     Sync trade history for a specific account.
@@ -115,7 +115,7 @@ async def sync_workspace(
     workspace_id: UUID,
     request: SyncWorkspaceRequest,
     api_key: str = Depends(verify_api_key),
-    db: DbSession = None,
+    db: AsyncSession = Depends(get_async_session),
 ):
     """
     Sync all active accounts in a workspace.
@@ -190,7 +190,7 @@ async def health_check(api_key: str = Depends(verify_api_key)):
 async def import_market_data(
     request: MarketDataSyncRequest,
     api_key: str = Depends(verify_api_key),
-    db: DbSession = None,
+    db: AsyncSession = Depends(get_async_session),
 ):
     """
     Import historical market data for a symbol.
@@ -227,7 +227,7 @@ async def import_market_data(
 async def cleanup_system(
     request: CleanupRequest,
     api_key: str = Depends(verify_api_key),
-    db: DbSession = None,
+    db: AsyncSession = Depends(get_async_session),
 ):
     """
     Clean up old logs and temporary data.
