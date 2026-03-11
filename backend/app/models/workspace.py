@@ -3,6 +3,8 @@ from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from app.models.withdrawal import Withdrawal
+from app.models.daily_note import DailyNote
 
 from app.core.database import Base
 
