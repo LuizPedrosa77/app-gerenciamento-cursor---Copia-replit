@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy import Column, String, Boolean, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -21,6 +21,21 @@ class User(Base):
     plan = Column(String(50), default="basic")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Profile fields
+    phone = Column(String(20), nullable=True)
+    bio = Column(Text, nullable=True)
+    avatar_url = Column(Text, nullable=True)
+    trading_style = Column(String(50), nullable=True)
+    experience_level = Column(String(50), nullable=True)
+    
+    # Preferences fields
+    theme = Column(String(20), default="dark")
+    language = Column(String(10), default="pt-BR")
+    currency = Column(String(10), default="USD")
+    timezone = Column(String(50), default="America/Sao_Paulo")
+    notifications_email = Column(Boolean, default=True)
+    notifications_push = Column(Boolean, default=True)
 
     # Relationships
     workspaces = relationship("Workspace", back_populates="owner")

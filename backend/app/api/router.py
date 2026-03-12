@@ -35,6 +35,30 @@ api_router.include_router(
     tags=["dashboard"]
 )
 
+# Import and include daily notes router
+from app.api.v1.endpoints import daily_notes
+api_router.include_router(
+    daily_notes.router,
+    prefix="/daily-notes",
+    tags=["daily-notes"]
+)
+
+# Import and include withdrawals router
+from app.api.v1.endpoints import withdrawals
+api_router.include_router(
+    withdrawals.router,
+    prefix="/withdrawals",
+    tags=["withdrawals"]
+)
+
+# Import and include goals router
+from app.api.v1.endpoints import goals
+api_router.include_router(
+    goals.router,
+    prefix="/goals",
+    tags=["goals"]
+)
+
 # Add endpoint routers here when they are created
 # Example:
 # from app.api.v1.endpoints.analytics import router as analytics_router
