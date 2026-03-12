@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, extract
 
 from app.dependencies import DbSession, get_current_user
+from app.core.database import get_db
 from app.models.user import User
 from app.models.trade import Trade
 from app.models.account import Account
@@ -414,3 +415,173 @@ def get_top_trades(
         
     except Exception:
         return []
+
+
+@router.get("/stats")
+def get_dashboard_stats(
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
+    account_id: Optional[str] = Query(default=None),
+    year: Optional[int] = Query(default=None),
+    month: Optional[int] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return {}
+    now = datetime.now()
+    if not year:
+        year = now.year
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Account.id == account_id)
+    if month:
+        query = query.filter(
+            Trade.entry_date >= datetime(year, month, 1),
+            Trade.entry_date < datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
+        )
+    trades = query.all()
+    total = len(trades)
+    wins = len([t for t in trades if (t.pnl or 0) > 0])
+    losses = total - wins
+    pnl = sum(t.pnl or 0 for t in trades)
+    win_rate = (wins / total * 100) if total > 0 else 0
+    best = max((t.pnl or 0 for t in trades), default=0)
+    worst = min((t.pnl or 0 for t in trades), default=0)
+    monthly = {}
+    for t in trades:
+        if t.entry_date:
+            key = t.entry_date.month
+            if key not in monthly:
+                monthly[key] = {"pnl": 0, "trades": 0, "wins": 0}
+            monthly[key]["pnl"] += t.pnl or 0
+            monthly[key]["trades"] += 1
+            if (t.pnl or 0) > 0:
+                monthly[key]["wins"] += 1
+    monthly_data = [
+        {
+            "month": m,
+            "pnl": round(d["pnl"], 2),
+            "trades": d["trades"],
+            "win_rate": round(d["wins"] / d["trades"] * 100, 2) if d["trades"] > 0 else 0
+        }
+        for m, d in sorted(monthly.items())
+    ]
+    pair_data = {}
+    for t in trades:
+        p = t.pair or "N/A"
+        if p not in pair_data:
+            pair_data[p] = {"pnl": 0, "trades": 0, "wins": 0}
+        pair_data[p]["pnl"] += t.pnl or 0
+        pair_data[p]["trades"] += 1
+        if (t.pnl or 0) > 0:
+            pair_data[p]["wins"] += 1
+    pair_list = [
+        {
+            "pair": k,
+            "pnl": round(v["pnl"], 2),
+            "trades": v["trades"],
+            "win_rate": round(v["wins"] / v["trades"] * 100, 2) if v["trades"] > 0 else 0
+        }
+        for k, v in pair_data.items()
+    ]
+    accounts = db.query(Account).filter(
+        Account.workspace_id == workspace.id
+    ).all()
+    total_balance = sum(a.balance or 0 for a in accounts)
+    return {
+        "total_trades": total,
+        "win_trades": wins,
+        "loss_trades": losses,
+        "win_rate": round(win_rate, 2),
+        "total_pnl": round(pnl, 2),
+        "best_trade": round(best, 2),
+        "worst_trade": round(worst, 2),
+        "total_balance": round(total_balance, 2),
+        "monthly_data": monthly_data,
+        "pair_data": pair_list,
+        "avg_monthly": round(pnl / len(monthly_data), 2) if monthly_data else 0,
+        "top5_best": sorted(
+            [{"pair": t.pair, "pnl": t.pnl, "date": str(t.entry_date)} for t in trades],
+            key=lambda x: x["pnl"] or 0, reverse=True
+        )[:5],
+        "top5_worst": sorted(
+            [{"pair": t.pair, "pnl": t.pnl, "date": str(t.entry_date)} for t in trades],
+            key=lambda x: x["pnl"] or 0
+        )[:5]
+    }
+
+@router.get("/by-direction")
+def get_by_direction(
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
+    account_id: Optional[str] = Query(default=None),
+    year: Optional[int] = Query(default=None),
+    month: Optional[int] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Account.id == account_id)
+    trades = query.all()
+    direction_data = {}
+    for t in trades:
+        d = t.direction or "N/A"
+        if d not in direction_data:
+            direction_data[d] = {"pnl": 0, "trades": 0, "wins": 0}
+        direction_data[d]["pnl"] += t.pnl or 0
+        direction_data[d]["trades"] += 1
+        if (t.pnl or 0) > 0:
+            direction_data[d]["wins"] += 1
+    return [
+        {
+            "direction": k,
+            "pnl": round(v["pnl"], 2),
+            "trades": v["trades"],
+            "win_rate": round(v["wins"] / v["trades"] * 100, 2) if v["trades"] > 0 else 0
+        }
+        for k, v in direction_data.items()
+    ]
+
+@router.get("/account-evolution")
+def get_account_evolution(
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
+    account_id: Optional[str] = Query(default=None),
+    year: Optional[int] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    now = datetime.now()
+    if not year:
+        year = now.year
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id,
+        Trade.entry_date >= datetime(year, 1, 1),
+        Trade.entry_date <= datetime(year, 12, 31)
+    ).order_by(Trade.entry_date.asc())
+    if account_id:
+        query = query.filter(Account.id == account_id)
+    trades = query.all()
+    evolution = []
+    cumulative = 0
+    for t in trades:
+        cumulative += t.pnl or 0
+        evolution.append({
+            "date": t.entry_date.strftime("%Y-%m-%d") if t.entry_date else None,
+            "pnl": round(t.pnl or 0, 2),
+            "cumulative": round(cumulative, 2)
+        })
+    return evolution

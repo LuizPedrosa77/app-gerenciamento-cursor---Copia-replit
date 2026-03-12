@@ -107,6 +107,22 @@ api_router.include_router(
     tags=["replay"]
 )
 
+# Import and include reports router
+from app.api.v1.endpoints import reports
+api_router.include_router(
+    reports.router,
+    prefix="/reports",
+    tags=["reports"]
+)
+
+# Import and include calendar router
+from app.api.v1.endpoints import calendar
+api_router.include_router(
+    calendar.router,
+    prefix="/calendar",
+    tags=["calendar"]
+)
+
 # Add endpoint routers here when they are created
 # Example:
 # from app.api.v1.endpoints.analytics import router as analytics_router
