@@ -13,6 +13,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Create base class for models
 Base = declarative_base()
 
+# Type alias for database session
+DbSession = Session
+
 
 def get_db() -> Session:
     """

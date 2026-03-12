@@ -27,6 +27,14 @@ api_router.include_router(
     tags=["trades"]
 )
 
+# Import and include dashboard router
+from app.api.v1.endpoints import dashboard
+api_router.include_router(
+    dashboard.router,
+    prefix="/dashboard",
+    tags=["dashboard"]
+)
+
 # Add endpoint routers here when they are created
 # Example:
 # from app.api.v1.endpoints.analytics import router as analytics_router
