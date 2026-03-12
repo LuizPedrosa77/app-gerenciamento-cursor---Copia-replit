@@ -8,6 +8,7 @@ from app.dependencies import DbSession, get_current_user
 from app.models.user import User
 from app.models.trade import Trade
 from app.models.account import Account
+from app.models.workspace import Workspace
 from app.schemas.dashboard import (
     DashboardSummary,
     MonthlyData,
@@ -22,8 +23,8 @@ router = APIRouter()
 def get_account_ids_query(db: Session, workspace_id: str, account_id: Optional[str] = None):
     """Retorna query para filtrar por account_id ou todas as contas do workspace"""
     if account_id:
-        return and_(Trade.account_id == account_id, Trade.workspace_id == workspace_id)
-    return Trade.workspace_id == workspace_id
+        return and_(Trade.account_id == account_id, Account.workspace_id == workspace_id)
+    return Account.workspace_id == workspace_id
 
 
 @router.get("/summary", response_model=DashboardSummary)
@@ -35,11 +36,37 @@ def get_dashboard_summary(
     month: Optional[int] = Query(None)
 ):
     try:
-        workspace_id = str(current_user.workspace_id)
-        account_filter = get_account_ids_query(db, workspace_id, account_id)
+        workspace = db.query(Workspace).filter(
+            Workspace.owner_id == current_user.id
+        ).first()
         
-        # Base query com filtros de data
-        base_query = db.query(Trade).filter(account_filter)
+        if not workspace:
+            return DashboardSummary(
+                total_trades=0,
+                win_trades=0,
+                loss_trades=0,
+                win_rate=0.0,
+                total_pnl=0.0,
+                best_trade=0.0,
+                worst_trade=0.0,
+                current_balance=0.0,
+                initial_balance=0.0,
+                monthly_goal=None,
+                goal_progress=0.0
+            )
+        
+        workspace_id = str(workspace.id)
+        
+        # Base query com JOIN e filtros
+        if account_id:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id,
+                Trade.account_id == account_id
+            )
+        else:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id
+            )
         
         if year:
             base_query = base_query.filter(Trade.year == year)
@@ -147,18 +174,34 @@ def get_monthly_data(
     year: int = Query(default=datetime.now().year)
 ):
     try:
-        workspace_id = str(current_user.workspace_id)
-        account_filter = get_account_ids_query(db, workspace_id, account_id)
+        workspace = db.query(Workspace).filter(
+            Workspace.owner_id == current_user.id
+        ).first()
+        
+        if not workspace:
+            return []
+        
+        workspace_id = str(workspace.id)
+        
+        # Base query com JOIN e filtros
+        if account_id:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id,
+                Trade.account_id == account_id
+            )
+        else:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id
+            )
         
         monthly_stats = (
-            db.query(
+            base_query.with_entities(
                 Trade.month,
                 Trade.year,
                 func.count(Trade.id).label('total_trades'),
                 func.sum(func.case([(Trade.result == "WIN", 1)], else_=0)).label('win_trades'),
                 func.sum(Trade.pnl).label('total_pnl')
             )
-            .filter(account_filter)
             .filter(Trade.year == year)
             .group_by(Trade.month, Trade.year)
             .order_by(Trade.month)
@@ -195,10 +238,25 @@ def get_pair_performance(
     month: Optional[int] = Query(None)
 ):
     try:
-        workspace_id = str(current_user.workspace_id)
-        account_filter = get_account_ids_query(db, workspace_id, account_id)
+        workspace = db.query(Workspace).filter(
+            Workspace.owner_id == current_user.id
+        ).first()
         
-        base_query = db.query(Trade).filter(account_filter)
+        if not workspace:
+            return []
+        
+        workspace_id = str(workspace.id)
+        
+        # Base query com JOIN e filtros
+        if account_id:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id,
+                Trade.account_id == account_id
+            )
+        else:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id
+            )
         
         if year:
             base_query = base_query.filter(Trade.year == year)
@@ -245,10 +303,25 @@ def get_weekday_performance(
     month: Optional[int] = Query(None)
 ):
     try:
-        workspace_id = str(current_user.workspace_id)
-        account_filter = get_account_ids_query(db, workspace_id, account_id)
+        workspace = db.query(Workspace).filter(
+            Workspace.owner_id == current_user.id
+        ).first()
         
-        base_query = db.query(Trade).filter(account_filter)
+        if not workspace:
+            return []
+        
+        workspace_id = str(workspace.id)
+        
+        # Base query com JOIN e filtros
+        if account_id:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id,
+                Trade.account_id == account_id
+            )
+        else:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id
+            )
         
         if year:
             base_query = base_query.filter(Trade.year == year)
@@ -301,10 +374,25 @@ def get_top_trades(
     limit: int = Query(default=5, ge=1, le=50)
 ):
     try:
-        workspace_id = str(current_user.workspace_id)
-        account_filter = get_account_ids_query(db, workspace_id, account_id)
+        workspace = db.query(Workspace).filter(
+            Workspace.owner_id == current_user.id
+        ).first()
         
-        base_query = db.query(Trade).filter(account_filter)
+        if not workspace:
+            return []
+        
+        workspace_id = str(workspace.id)
+        
+        # Base query com JOIN e filtros
+        if account_id:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id,
+                Trade.account_id == account_id
+            )
+        else:
+            base_query = db.query(Trade).join(Account).filter(
+                Account.workspace_id == workspace_id
+            )
         
         if trade_type == "profit":
             trades = base_query.order_by(Trade.pnl.desc()).limit(limit).all()
