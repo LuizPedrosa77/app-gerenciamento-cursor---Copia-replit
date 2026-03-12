@@ -75,6 +75,14 @@ api_router.include_router(
     tags=["brokers"]
 )
 
+# Import and include screenshots router
+from app.api.v1.endpoints import screenshots
+api_router.include_router(
+    screenshots.router,
+    prefix="/screenshots",
+    tags=["screenshots"]
+)
+
 # Add endpoint routers here when they are created
 # Example:
 # from app.api.v1.endpoints.analytics import router as analytics_router

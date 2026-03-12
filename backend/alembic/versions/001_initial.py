@@ -103,6 +103,7 @@ def upgrade() -> None:
             vm_result VARCHAR(10),
             vm_pnl NUMERIC(15,2) DEFAULT 0,
             screenshot_url TEXT,
+            screenshots JSON NULL DEFAULT '[]',
             notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

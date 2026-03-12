@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, String, Numeric, Boolean, DateTime, Text, ForeignKey, Integer, Date
+from sqlalchemy import Column, String, Numeric, Boolean, DateTime, Text, ForeignKey, Integer, Date, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -26,6 +26,7 @@ class Trade(Base):
     vm_result = Column(String(10), nullable=True)
     vm_pnl = Column(Numeric(15, 2), default=0)
     screenshot_url = Column(Text, nullable=True)
+    screenshots = Column(JSON, nullable=True, default=[])
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
