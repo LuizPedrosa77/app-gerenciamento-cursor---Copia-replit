@@ -19,11 +19,11 @@ export interface CreateConnectionData {
 }
 
 export interface MetaApiConnectionData {
-  account_id: string;
   login: string;
   password: string;
   server: string;
   platform: string;
+  accountName: string;
 }
 
 export interface SyncResult {

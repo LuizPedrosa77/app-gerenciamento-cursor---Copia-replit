@@ -6,6 +6,7 @@ from app.models.user import User
 from app.models.account import Account
 from app.models.trade import Trade
 from app.models.workspace import Workspace
+import uuid
 from app.schemas.metaapi import MTConnectRequest, MTSyncResponse
 from app.core.metaapi import (
     create_mt_account, wait_account_deployed,
@@ -26,28 +27,44 @@ def connect_mt_account(
     ).first()
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace não encontrado")
-    account = db.query(Account).filter(
-        Account.id == request.account_id,
-        Account.workspace_id == workspace.id
-    ).first()
-    if not account:
-        raise HTTPException(status_code=404, detail="Conta não encontrada")
+    
     try:
+        # Criar conta automaticamente
+        account = Account(
+            id=str(uuid.uuid4()),
+            workspace_id=workspace.id,
+            name=request.accountName,
+            currency="USD",  # Valor padrão, pode ser parametrizado depois
+            platform=request.platform.upper(),
+            is_demo=True,  # Assume demo por padrão
+            initial_balance=0,
+            current_balance=0,
+            monthly_goal_amount=0,
+            biweekly_goal_amount=0
+        )
+        
+        # Conectar ao MetaApi
         mt_account = create_mt_account(
             login=request.login,
             password=request.password,
             server=request.server,
             platform=request.platform
         )
+        
         metaapi_id = mt_account.get("id")
         account.broker_login = request.login
         account.broker_server = request.server
         account.broker_type = request.platform.upper()
         account.metaapi_account_id = metaapi_id
+        
+        db.add(account)
         db.commit()
+        db.refresh(account)
+        
         return {
             "success": True,
             "message": "Conta conectada! Sincronizando histórico...",
+            "account_id": account.id,
             "metaapi_account_id": metaapi_id
         }
     except Exception as e:

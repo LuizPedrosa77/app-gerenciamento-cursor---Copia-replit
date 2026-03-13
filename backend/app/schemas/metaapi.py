@@ -6,7 +6,7 @@ class MTConnectRequest(BaseModel):
     password: str
     server: str
     platform: str = "mt5"
-    account_id: str
+    accountName: str
 
 class MTSyncResponse(BaseModel):
     success: bool

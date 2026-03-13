@@ -37,7 +37,6 @@ export function ConnectBrokerModal({ open, onClose }: Props) {
   const [modalState, setModalState] = useState<ModalState>('form');
   const [progress, setProgress] = useState(0);
   const [accountId, setAccountId] = useState<string>('');
-  const [accounts, setAccounts] = useState<any[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
@@ -57,11 +56,6 @@ export function ConnectBrokerModal({ open, onClose }: Props) {
     }
   }, [open]);
 
-  useEffect(() => {
-    if (open) {
-      accountService.listAccounts().then(data => setAccounts(data)).catch(() => {});
-    }
-  }, [open]);
 
   useEffect(() => {
     if (modalState === 'success') {
@@ -72,18 +66,18 @@ export function ConnectBrokerModal({ open, onClose }: Props) {
   }, [modalState, onClose]);
 
   const handleConnect = async () => {
-    if (!selected || !server || !login || !password || !accountId) return;
+    if (!selected || !server || !login || !password) return;
     setModalState('loading');
     try {
-      await brokerService.connectMetaApi({
+      const result = await brokerService.connectMetaApi({
         login,
         password,
         server,
         platform: selected.toLowerCase(),
-        account_id: accountId,
+        accountName: accountName || `Conta ${selected}`,
       });
       setModalState('success');
-      brokerService.syncHistory(accountId).catch(() => {});
+      brokerService.syncHistory(result.account_id).catch(() => {});
     } catch (err: any) {
       setErrorMsg(err?.response?.data?.detail || 'Erro ao conectar. Verifique suas credenciais.');
       setModalState('error');
@@ -98,7 +92,7 @@ export function ConnectBrokerModal({ open, onClose }: Props) {
 
   const isMT = selected === 'MT5' || selected === 'MT4';
   const serverPlaceholder = isMT ? 'Ex: MetaQuotes-Demo' : 'Ex: https://api.tradovate.com';
-  const canSubmit = selected && server.trim() && login.trim() && password.trim() && accountId;
+  const canSubmit = selected && server.trim() && login.trim() && password.trim();
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
@@ -152,22 +146,6 @@ export function ConnectBrokerModal({ open, onClose }: Props) {
 
               {selected && (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[9px] font-bold uppercase tracking-[2px]" style={{ color: '#64748b' }}>
-                      Vincular à Conta
-                    </label>
-                    <select
-                      className="gpfx-input text-xs"
-                      value={accountId}
-                      onChange={e => setAccountId(e.target.value)}
-                      style={{ background: '#0d1117', color: '#e2e8f0' }}
-                    >
-                      <option value="">Selecione uma conta</option>
-                      {accounts.map(a => (
-                        <option key={a.id} value={a.id}>{a.name}</option>
-                      ))}
-                    </select>
-                  </div>
 
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] font-bold uppercase tracking-[2px]" style={{ color: '#64748b' }}>
