@@ -26,7 +26,15 @@ def connect_mt_account(
         Workspace.owner_id == current_user.id
     ).first()
     if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace não encontrado")
+        # Criar workspace automaticamente se não existir
+        workspace = Workspace(
+            id=str(uuid.uuid4()),
+            name="Workspace Padrão",
+            owner_id=current_user.id
+        )
+        db.add(workspace)
+        db.commit()
+        db.refresh(workspace)
     
     try:
         # Criar conta automaticamente
@@ -80,19 +88,28 @@ def sync_mt_history(
         Workspace.owner_id == current_user.id
     ).first()
     if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace não encontrado")
+        # Criar workspace automaticamente se não existir
+        workspace = Workspace(
+            id=str(uuid.uuid4()),
+            name="Workspace Padrão",
+            owner_id=current_user.id
+        )
+        db.add(workspace)
+        db.commit()
+        db.refresh(workspace)
+    
     account = db.query(Account).filter(
         Account.id == account_id,
         Account.workspace_id == workspace.id
     ).first()
     if not account:
-        raise HTTPException(status_code=404, detail="Conta não encontrada")
+        raise HTTPException(status_code=404, detail="Conta não encontrada ou não pertence ao seu workspace")
     if not account.metaapi_account_id:
         raise HTTPException(status_code=400, detail="Conta não conectada ao MetaApi")
     try:
         deployed = wait_account_deployed(account.metaapi_account_id)
         if not deployed:
-            raise HTTPException(status_code=400, detail="Conta não pôde ser conectada à corretora")
+            raise HTTPException(status_code=400, detail="Conta não pôde ser conectada à corretora. Verifique suas credenciais.")
         deals = get_trade_history(account.metaapi_account_id)
         imported = 0
         for deal in deals:
@@ -112,7 +129,7 @@ def sync_mt_history(
         db.commit()
         return {
             "success": True,
-            "message": f"Sincronização concluída!",
+            "message": f"Sincronização concluída! {imported} trades importados.",
             "trades_imported": imported
         }
     except HTTPException:
