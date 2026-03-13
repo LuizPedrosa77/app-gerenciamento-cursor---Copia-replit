@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -73,6 +73,35 @@ def create_account(
     db.refresh(account)
     
     return create_account_response(account)
+
+
+@router.get("/total-balance")
+def get_total_balance(
+    current_user: CurrentUser,
+    db: DbSession
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return {"total_balance": 0, "accounts": []}
+    accounts = db.query(Account).filter(
+        Account.workspace_id == workspace.id,
+        Account.is_active == True
+    ).all()
+    total = sum(a.balance or 0 for a in accounts)
+    return {
+        "total_balance": round(float(total), 2),
+        "accounts": [
+            {
+                "id": str(a.id),
+                "name": a.name,
+                "balance": round(float(a.balance or 0), 2),
+                "broker": a.broker
+            }
+            for a in accounts
+        ]
+    }
 
 
 @router.get("/{account_id}", response_model=AccountResponse)
@@ -182,3 +211,45 @@ def delete_account(
     db.commit()
     
     return {"message": "Conta removida"}
+
+
+@router.get("/{account_id}/metrics")
+def get_account_metrics(
+    account_id: str,
+    current_user: CurrentUser,
+    db: DbSession
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return {}
+    account = db.query(Account).filter(
+        Account.id == account_id,
+        Account.workspace_id == workspace.id
+    ).first()
+    if not account:
+        return {}
+    from app.models.trade import Trade
+    trades = db.query(Trade).filter(
+        Trade.account_id == account.id
+    ).all()
+    total = len(trades)
+    wins = len([t for t in trades if float(t.pnl or 0) > 0])
+    losses = total - wins
+    pnl = sum(float(t.pnl or 0) for t in trades)
+    win_rate = (wins / total * 100) if total > 0 else 0
+    best = max((float(t.pnl or 0) for t in trades), default=0)
+    worst = min((float(t.pnl or 0) for t in trades), default=0)
+    return {
+        "account_id": account_id,
+        "account_name": account.name,
+        "total_trades": total,
+        "wins": wins,
+        "losses": losses,
+        "win_rate": round(win_rate, 2),
+        "total_pnl": round(pnl, 2),
+        "best_trade": round(best, 2),
+        "worst_trade": round(worst, 2),
+        "balance": round(float(account.balance or 0), 2)
+    }

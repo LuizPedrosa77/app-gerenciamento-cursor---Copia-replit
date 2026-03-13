@@ -331,3 +331,232 @@ def delete_trades(
         update_account_balance(db, account_id)
     
     return {"message": f"{len(trades)} trades removidos"}
+
+
+@router.get("/stats")
+def get_trades_stats(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: Optional[str] = Query(default=None),
+    year: Optional[int] = Query(default=None),
+    month: Optional[int] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return {}
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Trade.account_id == account_id)
+    if year:
+        query = query.filter(Trade.year == year)
+    if month:
+        query = query.filter(Trade.month == month)
+    trades = query.all()
+    total = len(trades)
+    wins = len([t for t in trades if float(t.pnl or 0) > 0])
+    losses = total - wins
+    pnl = sum(float(t.pnl or 0) for t in trades)
+    win_rate = (wins / total * 100) if total > 0 else 0
+    best = max((float(t.pnl or 0) for t in trades), default=0)
+    worst = min((float(t.pnl or 0) for t in trades), default=0)
+    avg = pnl / total if total > 0 else 0
+    return {
+        "total_trades": total,
+        "wins": wins,
+        "losses": losses,
+        "win_rate": round(win_rate, 2),
+        "total_pnl": round(pnl, 2),
+        "avg_pnl": round(avg, 2),
+        "best_trade": round(best, 2),
+        "worst_trade": round(worst, 2)
+    }
+
+
+@router.get("/by-pair")
+def get_trades_by_pair(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: Optional[str] = Query(default=None),
+    year: Optional[int] = Query(default=None),
+    month: Optional[int] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Trade.account_id == account_id)
+    if year:
+        query = query.filter(Trade.year == year)
+    if month:
+        query = query.filter(Trade.month == month)
+    trades = query.all()
+    data = {}
+    for t in trades:
+        p = t.pair or "N/A"
+        if p not in data:
+            data[p] = {"pnl": 0, "trades": 0, "wins": 0}
+        data[p]["pnl"] += float(t.pnl or 0)
+        data[p]["trades"] += 1
+        if float(t.pnl or 0) > 0:
+            data[p]["wins"] += 1
+    return [
+        {
+            "pair": k,
+            "pnl": round(v["pnl"], 2),
+            "trades": v["trades"],
+            "win_rate": round(v["wins"] / v["trades"] * 100, 2) if v["trades"] > 0 else 0
+        }
+        for k, v in sorted(data.items(), key=lambda x: x[1]["pnl"], reverse=True)
+    ]
+
+
+@router.get("/by-weekday")
+def get_trades_by_weekday(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: Optional[str] = Query(default=None),
+    year: Optional[int] = Query(default=None),
+    month: Optional[int] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Trade.account_id == account_id)
+    if year:
+        query = query.filter(Trade.year == year)
+    if month:
+        query = query.filter(Trade.month == month)
+    trades = query.all()
+    days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
+    data = {i: {"pnl": 0, "trades": 0, "wins": 0} for i in range(7)}
+    for t in trades:
+        if t.date:
+            wd = t.date.weekday()
+            data[wd]["pnl"] += float(t.pnl or 0)
+            data[wd]["trades"] += 1
+            if float(t.pnl or 0) > 0:
+                data[wd]["wins"] += 1
+    return [
+        {
+            "weekday": i,
+            "weekday_name": days[i],
+            "pnl": round(data[i]["pnl"], 2),
+            "trades": data[i]["trades"],
+            "win_rate": round(data[i]["wins"] / data[i]["trades"] * 100, 2) if data[i]["trades"] > 0 else 0
+        }
+        for i in range(7)
+    ]
+
+
+@router.get("/by-direction")
+def get_trades_by_direction(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: Optional[str] = Query(default=None)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Trade.account_id == account_id)
+    trades = query.all()
+    data = {}
+    for t in trades:
+        d = t.direction or "N/A"
+        if d not in data:
+            data[d] = {"pnl": 0, "trades": 0, "wins": 0}
+        data[d]["pnl"] += float(t.pnl or 0)
+        data[d]["trades"] += 1
+        if float(t.pnl or 0) > 0:
+            data[d]["wins"] += 1
+    return [
+        {
+            "direction": k,
+            "pnl": round(v["pnl"], 2),
+            "trades": v["trades"],
+            "win_rate": round(v["wins"] / v["trades"] * 100, 2) if v["trades"] > 0 else 0
+        }
+        for k, v in data.items()
+    ]
+
+
+@router.get("/top")
+def get_top_trades(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: Optional[str] = Query(default=None),
+    limit: int = Query(default=5)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Trade.account_id == account_id)
+    trades = query.order_by(Trade.pnl.desc()).limit(limit).all()
+    return [
+        {
+            "id": str(t.id),
+            "date": str(t.date),
+            "pair": t.pair,
+            "direction": t.direction,
+            "pnl": round(float(t.pnl or 0), 2),
+            "result": t.result
+        }
+        for t in trades
+    ]
+
+
+@router.get("/worst")
+def get_worst_trades(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: Optional[str] = Query(default=None),
+    limit: int = Query(default=5)
+):
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        return []
+    query = db.query(Trade).join(Account).filter(
+        Account.workspace_id == workspace.id
+    )
+    if account_id:
+        query = query.filter(Trade.account_id == account_id)
+    trades = query.order_by(Trade.pnl.asc()).limit(limit).all()
+    return [
+        {
+            "id": str(t.id),
+            "date": str(t.date),
+            "pair": t.pair,
+            "direction": t.direction,
+            "pnl": round(float(t.pnl or 0), 2),
+            "result": t.result
+        }
+        for t in trades
+    ]
