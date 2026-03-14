@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     MINIO_USE_SSL: bool = True
     REDIS_URL: str = "redis://redis:6379/0"
     N8N_WEBHOOK_URL: str = ""
+    MTCONNECT_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
