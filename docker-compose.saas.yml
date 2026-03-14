@@ -1,7 +1,5 @@
 version: "3.8"
-
 services:
-
   frontend:
     image: hubnexusai/gpfx-frontend:latest
     networks:
@@ -21,7 +19,6 @@ services:
         - traefik.http.routers.gpfx.service=gpfx
         - traefik.http.routers.gpfx.tls.certresolver=le
         - com.centurylinklabs.watchtower.enable=true
-
   backend:
     image: hubnexusai/gpfx-backend:latest
     networks:
@@ -39,6 +36,8 @@ services:
       - MINIO_USE_SSL=true
       - REDIS_URL=redis://redis:6379/5
       - N8N_WEBHOOK_URL=https://n8n.hubnexusai.com/webhook
+      - ACCESS_TOKEN_EXPIRE_MINUTES=480
+      - REFRESH_TOKEN_EXPIRE_DAYS=30
     deploy:
       mode: replicated
       replicas: 1
@@ -53,7 +52,6 @@ services:
         - traefik.http.routers.gpfx-api.service=gpfx-api
         - traefik.http.routers.gpfx-api.tls.certresolver=le
         - com.centurylinklabs.watchtower.enable=true
-
 networks:
   digital_network:
     external: true
