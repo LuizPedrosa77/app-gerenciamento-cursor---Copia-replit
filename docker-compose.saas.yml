@@ -13,7 +13,7 @@ services:
           - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.gpfx.rule=Host(`fx.hubnexusai.com`)
+        - traefik.http.routers.gpfx.rule=Host(`fx.painelzap.com`)
         - traefik.http.routers.gpfx.entrypoints=websecure
         - traefik.http.services.gpfx.loadbalancer.server.port=80
         - traefik.http.routers.gpfx.service=gpfx
@@ -35,7 +35,7 @@ services:
       - MINIO_BUCKET=appgerenciamentofx
       - MINIO_USE_SSL=true
       - REDIS_URL=redis://redis:6379/5
-      - N8N_WEBHOOK_URL=https://n8n.hubnexusai.com/webhook
+      - N8N_WEBHOOK_URL=https://n8n.painelzap.com/webhook
       - ACCESS_TOKEN_EXPIRE_MINUTES=480
       - REFRESH_TOKEN_EXPIRE_DAYS=30
       - MTCONNECT_API_KEY=FfDghn2d9it8Mesmo2uVYh2YXdYgDAAm
@@ -47,7 +47,7 @@ services:
           - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.gpfx-api.rule=Host(`api.hubnexusai.com`)
+        - traefik.http.routers.gpfx-api.rule=Host(`api.painelzap.com`)
         - traefik.http.routers.gpfx-api.entrypoints=websecure
         - traefik.http.services.gpfx-api.loadbalancer.server.port=8000
         - traefik.http.routers.gpfx-api.service=gpfx-api
