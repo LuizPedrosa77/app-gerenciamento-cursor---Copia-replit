@@ -39,14 +39,13 @@ class SyncRequest(BaseModel):
     account_login: str
     account_name: str
     server: str
-    balance: float
-    equity: float
     trades: List[TradeItem] = []
     positions: List[PositionItem] = []
 
 class OpenRequest(BaseModel):
     email: str
     account_login: str
+    account_name: str
     server: str
     ticket: int
     symbol: str
@@ -54,8 +53,6 @@ class OpenRequest(BaseModel):
     volume: float
     open_price: float
     open_time: str
-    balance: float
-    equity: float
 
 class CloseRequest(BaseModel):
     email: str
@@ -70,8 +67,6 @@ class CloseRequest(BaseModel):
     close_time: str
     open_price: float
     close_price: float
-    balance: float
-    equity: float
 
 def parse_dt(dt_str: str) -> datetime:
     for fmt in ["%Y.%m.%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]:
@@ -95,14 +90,13 @@ def get_or_create_workspace(db: Session, user: User) -> Workspace:
         db.refresh(workspace)
     return workspace
 
-def get_or_create_account(db, workspace, login, name, server, balance):
+def get_or_create_account(db, workspace, login, name, server):
     account = db.query(Account).filter(
         Account.workspace_id == workspace.id,
         Account.broker_login == login,
         Account.broker_server == server
     ).first()
     if not account:
-        # Primeira vez — define initial_balance como o balance atual
         account = Account(
             workspace_id=workspace.id,
             name=name,
@@ -110,15 +104,13 @@ def get_or_create_account(db, workspace, login, name, server, balance):
             broker_server=server,
             broker_type="MT5",
             is_active=True,
-            balance=balance,
-            initial_balance=balance  # só definido na criação
+            balance=0,
+            initial_balance=0
         )
         db.add(account)
         db.commit()
         db.refresh(account)
     else:
-        # Atualizações seguintes — só atualiza balance, NUNCA initial_balance
-        account.balance = balance
         account.name = name
         db.commit()
     return account
@@ -131,7 +123,7 @@ async def sync(req: SyncRequest, db: Session = Depends(get_db)):
     workspace = get_or_create_workspace(db, user)
     account = get_or_create_account(
         db, workspace, req.account_login,
-        req.account_name, req.server, req.balance
+        req.account_name, req.server
     )
     imported = 0
     updated = 0
@@ -202,7 +194,6 @@ def open_trade(req: OpenRequest, db: Session = Depends(get_db)):
             status_code=404,
             detail="Conta não encontrada. Execute o sync primeiro."
         )
-    account.balance = req.balance
     db.commit()
     return {"success": True, "message": "Posição aberta registrada", "ticket": req.ticket}
 
@@ -248,7 +239,6 @@ async def close_trade(req: CloseRequest, db: Session = Depends(get_db)):
         )
         db.add(trade)
         updated_msg = "criado"
-    account.balance = req.balance
     db.commit()
 
     asyncio.create_task(ws_manager.send_to_user(str(user.id), {
@@ -259,12 +249,12 @@ async def close_trade(req: CloseRequest, db: Session = Depends(get_db)):
         "symbol": req.symbol,
         "pnl": float(req.profit),
         "result": result,
-        "new_balance": float(account.balance),
+        "new_balance": 0.0,
     }))
 
     return {
         "success": True,
         "message": f"Trade {updated_msg} com sucesso",
         "account_id": str(account.id),
-        "new_balance": float(account.balance)
+        "new_balance": 0.0,
     }
