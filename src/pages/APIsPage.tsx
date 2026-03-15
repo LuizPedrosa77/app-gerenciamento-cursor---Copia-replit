@@ -28,7 +28,7 @@ interface Section {
 }
 
 /* ── data ── */
-const BASE_URL = 'https://api.hubnexusai.com/api/v1';
+const BASE_URL = 'https://api.painelzap.com/api/v1';
 
 const sections: Section[] = [
   {
@@ -116,7 +116,7 @@ const sections: Section[] = [
       { method: 'POST', path: '/replay/sessions/{id}/start', description: 'Iniciar replay', n8nExample: `Method: POST\nURL: ${BASE_URL}/replay/sessions/{{id}}/start`, pythonExample: `res = requests.post(f"${BASE_URL}/replay/sessions/{id}/start", headers=headers)` },
       { method: 'POST', path: '/replay/sessions/{id}/pause', description: 'Pausar replay', n8nExample: `Method: POST\nURL: ${BASE_URL}/replay/sessions/{{id}}/pause`, pythonExample: `res = requests.post(f"${BASE_URL}/replay/sessions/{id}/pause", headers=headers)` },
       { method: 'POST', path: '/replay/sessions/{id}/stop', description: 'Parar replay', n8nExample: `Method: POST\nURL: ${BASE_URL}/replay/sessions/{{id}}/stop`, pythonExample: `res = requests.post(f"${BASE_URL}/replay/sessions/{id}/stop", headers=headers)` },
-      { method: 'WS', path: '/ws/replay/{session_id}', description: 'WebSocket para streaming de dados', n8nExample: `// WebSocket não suportado diretamente no n8n.\n// Use um script Python ou Node.js para conectar.`, pythonExample: `import websockets, asyncio\n\nasync def replay():\n  async with websockets.connect(\n    "wss://api.hubnexusai.com/ws/replay/{session_id}"\n  ) as ws:\n    async for msg in ws:\n      print(msg)\n\nasyncio.run(replay())` },
+      { method: 'WS', path: '/ws/replay/{session_id}', description: 'WebSocket para streaming de dados', n8nExample: `// WebSocket não suportado diretamente no n8n.\n// Use um script Python ou Node.js para conectar.`, pythonExample: `import websockets, asyncio\n\nasync def replay():\n  async with websockets.connect(\n    "wss://api.painelzap.com/ws/replay/{session_id}"\n  ) as ws:\n    async for msg in ws:\n      print(msg)\n\nasyncio.run(replay())` },
     ],
   },
   {
@@ -274,7 +274,7 @@ export default function APIsPage() {
               <CopyButton text="Authorization: Bearer {seu_token}" />
             </div>
             <a
-              href="https://api.hubnexusai.com/docs"
+              href="https://api.painelzap.com/docs"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline mt-1"
