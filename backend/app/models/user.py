@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, Text
+from sqlalchemy import Column, String, Boolean, DateTime, Text, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -24,6 +24,10 @@ class User(Base):
     
     # Profile fields
     phone = Column(String(20), nullable=True)
+    birth_date = Column(Date, nullable=True)
+    country = Column(String(100), nullable=True)
+    address = Column(Text, nullable=True)
+    city = Column(String(100), nullable=True)
     bio = Column(Text, nullable=True)
     avatar_url = Column(Text, nullable=True)
     trading_style = Column(String(50), nullable=True)

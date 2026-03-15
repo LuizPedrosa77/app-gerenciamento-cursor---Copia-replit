@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Mail, Lock, User, CreditCard, Eye, EyeOff, ArrowLeft, Check, LayoutDashboard, Calendar, Plug, Play, Bot, FileText } from 'lucide-react';
+import { Mail, Lock, User, CreditCard, Eye, EyeOff, ArrowLeft, Check, LayoutDashboard, Calendar, Plug, Play, Bot, FileText, Phone, Globe, MapPin, Home } from 'lucide-react';
 import authService from '@/services/authService';
 
 type AuthView = 'login' | 'signup' | 'forgot';
@@ -129,6 +129,11 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
   const [confirmPw, setConfirmPw] = useState('');
   const [terms, setTerms] = useState(false);
   const [signupPw, setSignupPw] = useState('');
+  const [phone, setPhone] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [country, setCountry] = useState('Brasil');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
 
   const strength = useMemo(() => passwordStrength(signupPw), [signupPw]);
 
@@ -156,7 +161,17 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
     setLoading(true);
     setAuthError('');
     try {
-      await authService.register({ name, email, password: signupPw, cpf: cpf.replace(/\D/g, '') });
+      await authService.register({
+        name,
+        email,
+        password: signupPw,
+        cpf: cpf.replace(/\D/g, ''),
+        phone,
+        birth_date: birthDate || undefined,
+        country,
+        address,
+        city,
+      });
       onLogin();
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Erro ao criar conta';
@@ -317,6 +332,66 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
         <input type="text" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(cpfMask(e.target.value))} required style={inputStyle} />
       </div>
 
+      {/* Telefone */}
+      <div className="relative">
+        <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <input
+          type="tel"
+          placeholder="(00) 00000-0000"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+
+      {/* Data de Nascimento */}
+      <div className="relative">
+        <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <input
+          type="date"
+          placeholder="Data de nascimento"
+          value={birthDate}
+          onChange={e => setBirthDate(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+
+      {/* País */}
+      <div className="relative">
+        <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <input
+          type="text"
+          placeholder="País"
+          value={country}
+          onChange={e => setCountry(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+
+      {/* Cidade */}
+      <div className="relative">
+        <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <input
+          type="text"
+          placeholder="Cidade"
+          value={city}
+          onChange={e => setCity(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+
+      {/* Endereço */}
+      <div className="relative">
+        <Home size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <input
+          type="text"
+          placeholder="Endereço completo"
+          value={address}
+          onChange={e => setAddress(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+
       <div>
         <div className="relative">
           <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
@@ -332,6 +407,11 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
             </div>
             <span className="text-xs font-medium" style={{ color: strength.color }}>{strength.label}</span>
           </div>
+        )}
+        {signupPw && signupPw.length < 6 && (
+          <p className="text-xs mt-1" style={{ color: '#ff4d4d' }}>
+            ⚠️ A senha deve ter no mínimo 6 caracteres
+          </p>
         )}
       </div>
 
@@ -359,7 +439,7 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
         </div>
       )}
 
-      <button type="submit" disabled={loading || !terms} style={{ ...btnPrimary, opacity: (loading || !terms) ? 0.5 : 1 }}>
+      <button type="submit" disabled={loading || !terms || signupPw.length < 6} style={{ ...btnPrimary, opacity: (loading || !terms || signupPw.length < 6) ? 0.5 : 1 }}>
         {loading ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : 'Criar Conta'}
       </button>
 

@@ -11,21 +11,29 @@ class ProfileUpdate(BaseModel):
     avatar_url: Optional[str] = None
     trading_style: Optional[str] = None
     experience_level: Optional[str] = None
+    birth_date: Optional[str] = None
+    country: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
 
 
 class ProfileResponse(BaseModel):
     id: str
     email: str
     full_name: str
-    cpf: Optional[str]
-    phone: Optional[str]
-    bio: Optional[str]
-    avatar_url: Optional[str]
-    trading_style: Optional[str]
-    experience_level: Optional[str]
+    cpf: Optional[str] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    trading_style: Optional[str] = None
+    experience_level: Optional[str] = None
     plan: str
     has_google: bool
     created_at: datetime
+    birth_date: Optional[str] = None
+    country: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
 
 
 class PreferencesUpdate(BaseModel):

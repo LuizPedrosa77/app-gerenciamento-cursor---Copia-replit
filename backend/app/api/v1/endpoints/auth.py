@@ -32,6 +32,11 @@ def create_user_response(user: User) -> UserResponse:
         email=user.email,
         full_name=user.full_name,
         cpf=user.cpf,
+        phone=user.phone,
+        birth_date=str(user.birth_date) if user.birth_date else None,
+        country=user.country,
+        address=user.address,
+        city=user.city,
         is_active=user.is_active,
         plan=user.plan,
         has_google=bool(user.google_id),
@@ -96,7 +101,12 @@ def register(
         full_name=user_data.name,
         cpf=user_data.cpf,
         hashed_password=hashed_password,
-        google_id=google_id
+        google_id=google_id,
+        phone=user_data.phone,
+        birth_date=user_data.birth_date,
+        country=user_data.country,
+        address=user_data.address,
+        city=user_data.city,
     )
     db.add(user)
     db.commit()

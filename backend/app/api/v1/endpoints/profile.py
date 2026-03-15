@@ -15,7 +15,6 @@ router = APIRouter()
 
 @router.get("", response_model=ProfileResponse)
 def get_profile(current_user: User = Depends(get_current_user)):
-    """Get current user profile"""
     return ProfileResponse(
         id=str(current_user.id),
         email=current_user.email,
@@ -28,7 +27,11 @@ def get_profile(current_user: User = Depends(get_current_user)):
         experience_level=current_user.experience_level,
         plan=current_user.plan,
         has_google=bool(current_user.google_id),
-        created_at=current_user.created_at
+        created_at=current_user.created_at,
+        birth_date=str(current_user.birth_date) if current_user.birth_date else None,
+        country=current_user.country,
+        address=current_user.address,
+        city=current_user.city,
     )
 
 
@@ -42,10 +45,9 @@ def update_profile(
     try:
         # Update only provided fields
         update_data = profile_data.dict(exclude_unset=True)
-        
         for field, value in update_data.items():
-            setattr(current_user, field, value)
-        
+            if hasattr(current_user, field):
+                setattr(current_user, field, value)
         db.commit()
         db.refresh(current_user)
         
@@ -61,7 +63,11 @@ def update_profile(
             experience_level=current_user.experience_level,
             plan=current_user.plan,
             has_google=bool(current_user.google_id),
-            created_at=current_user.created_at
+            created_at=current_user.created_at,
+            birth_date=str(current_user.birth_date) if current_user.birth_date else None,
+            country=current_user.country,
+            address=current_user.address,
+            city=current_user.city,
         )
     except Exception as e:
         db.rollback()

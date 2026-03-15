@@ -13,6 +13,11 @@ export interface RegisterData {
   email: string;
   cpf?: string;
   password: string;
+  phone?: string;
+  birth_date?: string;
+  country?: string;
+  address?: string;
+  city?: string;
 }
 
 export interface AuthResponse {

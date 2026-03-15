@@ -8,6 +8,11 @@ class UserRegister(BaseModel):
     email: EmailStr
     cpf: Optional[str] = None
     password: str = Field(..., min_length=6)
+    phone: Optional[str] = None
+    birth_date: Optional[str] = None
+    country: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
     google_token: Optional[str] = None
 
 
@@ -25,6 +30,11 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     cpf: Optional[str]
+    phone: Optional[str]
+    birth_date: Optional[str]
+    country: Optional[str]
+    address: Optional[str]
+    city: Optional[str]
     is_active: bool
     plan: str
     has_google: bool
