@@ -45,13 +45,14 @@ class AuthService {
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/api/v1/auth/login', credentials);
-      
-      // Salvar tokens e dados do usuário
+      const payload = {
+        email: credentials.email,
+        password: credentials.password,
+      };
+      const response = await api.post<AuthResponse>('/api/v1/auth/login', payload);
       localStorage.setItem('gpfx_auth_token', response.data.access_token);
       localStorage.setItem('gpfx_refresh_token', response.data.refresh_token);
       localStorage.setItem('user_data', JSON.stringify(response.data.user));
-      
       return response.data;
     } catch (error) {
       console.error('Login error:', error);
@@ -64,13 +65,16 @@ class AuthService {
    */
   async register(data: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/api/v1/auth/register', data);
-      
-      // Salvar tokens e dados do usuário
+      const payload = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        cpf: data.cpf || null,
+      };
+      const response = await api.post<AuthResponse>('/api/v1/auth/register', payload);
       localStorage.setItem('gpfx_auth_token', response.data.access_token);
       localStorage.setItem('gpfx_refresh_token', response.data.refresh_token);
       localStorage.setItem('user_data', JSON.stringify(response.data.user));
-      
       return response.data;
     } catch (error) {
       console.error('Register error:', error);

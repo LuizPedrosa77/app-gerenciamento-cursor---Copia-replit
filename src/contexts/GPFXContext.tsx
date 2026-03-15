@@ -41,7 +41,7 @@ function getAuthToken(): string | null {
 }
 
 function getWsUrl(): string {
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiBase = import.meta.env.VITE_API_URL || 'https://api.painelzap.com';
   return apiBase.replace(/^http/, 'ws') + '/ws/trades';
 }
 
@@ -129,7 +129,7 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         const apiAccounts = await accountService.list();
-        if (!apiAccounts || apiAccounts.length === 0) return; // keep localStorage data
+        if (!apiAccounts || apiAccounts.length === 0) return;
 
         const accounts: Account[] = [];
         for (const apiAcc of apiAccounts) {
@@ -137,7 +137,9 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
           try {
             const apiTrades = await tradeService.list(apiAcc.id);
             trades = apiTrades.map(apiTradeToLocal);
-          } catch { /* use empty trades */ }
+          } catch {
+            // usa trades vazios silenciosamente
+          }
           accounts.push(apiAccToLocal(apiAcc, trades));
         }
 
@@ -152,6 +154,7 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
         });
       } catch (err) {
         console.warn('[GPFX] Backend load failed, using localStorage fallback', err);
+        // Nunca relança — tela nunca quebra por falha na API
       }
     })();
   }, []);
