@@ -102,6 +102,7 @@ def get_or_create_account(db, workspace, login, name, server, balance):
         Account.broker_server == server
     ).first()
     if not account:
+        # Primeira vez — define initial_balance como o balance atual
         account = Account(
             workspace_id=workspace.id,
             name=name,
@@ -110,13 +111,15 @@ def get_or_create_account(db, workspace, login, name, server, balance):
             broker_type="MT5",
             is_active=True,
             balance=balance,
-            initial_balance=balance
+            initial_balance=balance  # só definido na criação
         )
         db.add(account)
         db.commit()
         db.refresh(account)
     else:
+        # Atualizações seguintes — só atualiza balance, NUNCA initial_balance
         account.balance = balance
+        account.name = name
         db.commit()
     return account
 
@@ -153,9 +156,9 @@ async def sync(req: SyncRequest, db: Session = Depends(get_db)):
                 workspace_id=workspace.id,
                 date=dt.date(),
                 year=dt.year,
-                month=dt.month,
+                month=dt.month - 1,  # JS usa 0-indexed (Jan=0, Dez=11)
                 pair=t.symbol,
-                direction=direction,
+                direction=direction,  # mantém direction no banco
                 lots=float(t.volume),
                 pnl=pnl,
                 result=result,
@@ -235,7 +238,7 @@ async def close_trade(req: CloseRequest, db: Session = Depends(get_db)):
             workspace_id=workspace.id,
             date=dt_close.date(),
             year=dt_close.year,
-            month=dt_close.month,
+            month=dt_close.month - 1,  # JS usa 0-indexed
             pair=req.symbol,
             direction=direction,
             lots=float(req.volume),

@@ -210,7 +210,15 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
   const monthTrades = useMemo(() => {
     let trades: Trade[] = [];
     filteredAccounts.forEach(a => {
-      trades.push(...a.trades.filter(t => t.year === calYear && t.month === calMonth));
+      const filtered = a.trades
+        .filter(t => t.year === calYear && t.month === calMonth)
+        .map(t => ({
+          ...t,
+          date: t.date
+            ? t.date.toString().replace(/\./g, '-').substring(0, 10)
+            : t.date,
+        }));
+      trades.push(...filtered);
     });
     return trades;
   }, [filteredAccounts, calYear, calMonth]);
@@ -938,6 +946,12 @@ export default function CalendarioPage({ onNavigateView }: CalendarioPageProps) 
                   </button>
                 )}
                 <span className="text-xs font-bold" style={{ color: 'var(--gpfx-text-primary)' }}>{t.pair}</span>
+                {/* Hora do trade */}
+                {t.time && (
+                  <span className="text-[10px] font-mono" style={{ color: 'var(--gpfx-text-muted)' }}>
+                    🕐 {t.time}
+                  </span>
+                )}
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{
                   color: t.dir === 'BUY' ? '#00d395' : '#ff4d4d',
                   background: t.dir === 'BUY' ? 'rgba(0,211,149,0.15)' : 'rgba(255,77,77,0.15)',

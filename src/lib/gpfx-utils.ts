@@ -25,6 +25,7 @@ export interface Trade {
   year: number;
   month: number;
   date: string;
+  time?: string; // hora do trade ex: "10:30"
   pair: string;
   dir: string;
   lots?: number;
@@ -85,9 +86,9 @@ export function uid(): string {
 }
 
 export function getAccountBalance(acc: Account): number {
-  const totalPnl = sumPnl(acc.trades);
-  const allWithdrawals = Object.values(acc.withdrawals || {}).reduce((s, v) => s + v, 0);
-  return acc.balance + totalPnl - allWithdrawals;
+  const initialBalance = (acc as any).initialBalance || 0;
+  const totalPnl = acc.trades.reduce((sum, t) => sum + (getTradePnl(t) || 0), 0);
+  return initialBalance + totalPnl;
 }
 
 export function getMonthPnl(acc: Account, year: number, month: number): number {

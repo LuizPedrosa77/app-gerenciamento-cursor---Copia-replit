@@ -8,6 +8,7 @@ export interface APITrade {
   date: string;
   pair: string;
   dir: string;
+  direction?: string; // campo do backend EA
   lots?: number;
   result: string;
   pnl: number;

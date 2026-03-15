@@ -859,7 +859,7 @@ export default function PlanilhaPage() {
             const dateStr = t.date ? t.date.split('-').slice(1).reverse().join('/') : '??';
             return (
               <div key={t.id}>
-                • {dateStr} {t.pair} {t.dir} {t.result}{' '}
+                • {dateStr}{t.time ? ` ${t.time}` : ''} {t.pair} {t.dir} {t.result}{' '}
                 <span style={{ color: pnl >= 0 ? '#00d395' : '#ff4d4d' }}>
                   {pnl >= 0 ? '+' : ''}${fmtNum(pnl)}
                 </span>

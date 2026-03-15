@@ -56,24 +56,37 @@ function apiAccToLocal(a: APIAccount, existingTrades: Trade[] = []): Account & {
     withdrawals: a.withdrawals || {},
     meta: a.meta,
     monthlyGoal: a.monthly_goal,
+    initialBalance: (a as any).initial_balance || a.balance,
   } as any;
 }
 
 function apiTradeToLocal(t: APITrade): Trade {
+  const rawDate = t.date ? t.date.toString() : '';
+  // Normaliza formato: "2026.03.15 10:30:00" → "2026-03-15"
+  const normalizedDate = rawDate
+    .replace(/\./g, '-')
+    .substring(0, 10);
+
+  // Preserva hora: "2026.03.15 10:30:00" → "10:30"
+  const timePart = rawDate.length > 10
+    ? rawDate.replace(/\./g, '-').substring(11, 16)
+    : '';
+
   return {
     id: t.id,
     year: t.year,
     month: t.month,
-    date: t.date,
+    date: normalizedDate,
+    time: timePart, // hora preservada ex: "10:30"
     pair: t.pair,
-    dir: t.dir,
+    dir: (t as any).direction || t.dir || 'BUY',
     lots: t.lots,
     result: t.result,
     pnl: t.pnl,
-    hasVM: t.has_vm,
-    vmLots: t.vm_lots,
-    vmResult: t.vm_result,
-    vmPnl: t.vm_pnl,
+    hasVM: t.has_vm || false,
+    vmLots: t.vm_lots || 0,
+    vmResult: t.vm_result || 'WIN',
+    vmPnl: t.vm_pnl || 0,
     screenshot: t.screenshot,
   };
 }

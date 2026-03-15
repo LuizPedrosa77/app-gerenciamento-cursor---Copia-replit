@@ -189,14 +189,15 @@ export default function DashboardPage() {
     let allTradesRaw: Trade[] = [];
     accounts.forEach(acc => allTradesRaw.push(...acc.trades));
     const allTrades = filterTradesByRange(allTradesRaw, dateRange);
-    let totalBalance = 0;
+    const totalBalance = accounts.reduce((sum, acc) => {
+      const initialBalance = (acc as any).initialBalance || 0;
+      const totalPnl = acc.trades.reduce((t, trade) => t + (getTradePnl(trade) || 0), 0);
+      return sum + initialBalance + totalPnl;
+    }, 0);
     let totalPnl = 0;
     let totalTrades = 0;
     let totalWins = 0;
 
-    accounts.forEach(acc => {
-      totalBalance += getAccountBalance(acc);
-    });
     totalPnl = sumPnl(allTrades);
     totalTrades = allTrades.length;
     totalWins = allTrades.filter(t => t.result === 'WIN').length;

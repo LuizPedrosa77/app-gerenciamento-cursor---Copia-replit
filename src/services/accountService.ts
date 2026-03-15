@@ -4,6 +4,7 @@ export interface APIAccount {
   id: string;
   name: string;
   balance: number;
+  initial_balance?: number; // saldo inicial da conta
   notes: string;
   meta?: number;
   monthly_goal?: number;
