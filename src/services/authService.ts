@@ -75,6 +75,11 @@ class AuthService {
         email: data.email,
         password: data.password,
         cpf: data.cpf || null,
+        phone: data.phone || null,
+        birth_date: data.birth_date || null,
+        country: data.country || null,
+        address: data.address || null,
+        city: data.city || null,
       };
       console.log('[AUTH] Register payload:', JSON.stringify(payload));
       const response = await api.post<AuthResponse>('/api/v1/auth/register', payload);
