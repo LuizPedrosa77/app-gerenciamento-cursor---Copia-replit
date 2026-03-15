@@ -67,8 +67,6 @@ def get_trades(
     account_id: Optional[str] = Query(None),
     year: Optional[int] = Query(None),
     month: Optional[int] = Query(None),
-    skip: int = Query(0),
-    limit: int = Query(100)
 ):
     """Get trades with optional filters."""
     # Get user's workspace
@@ -89,9 +87,7 @@ def get_trades(
     if month:
         query = query.filter(Trade.month == month)
     
-    # Apply pagination
-    trades = query.offset(skip).limit(limit).all()
-    
+    trades = query.order_by(Trade.date.asc()).all()
     return [create_trade_response(trade) for trade in trades]
 
 
