@@ -4,6 +4,14 @@ import authService from '@/services/authService';
 
 type AuthView = 'login' | 'signup' | 'forgot';
 
+function phoneMask(value: string) {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2');
+}
+
 function cpfMask(value: string) {
   return value
     .replace(/\D/g, '')
@@ -158,6 +166,10 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
       setAuthError('As senhas não coincidem');
       return;
     }
+    if (signupPw.length < 6) {
+      setAuthError('A senha deve ter no mínimo 6 caracteres');
+      return;
+    }
     setLoading(true);
     setAuthError('');
     try {
@@ -165,12 +177,12 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
         name,
         email,
         password: signupPw,
-        cpf: cpf.replace(/\D/g, ''),
-        phone,
+        cpf: cpf.replace(/\D/g, '') || undefined,
+        phone: phone.replace(/\D/g, '') || undefined,
         birth_date: birthDate || undefined,
-        country,
-        address,
-        city,
+        country: country || undefined,
+        address: address || undefined,
+        city: city || undefined,
       });
       onLogin();
     } catch (err: any) {
@@ -179,7 +191,7 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
     } finally {
       setLoading(false);
     }
-  }, [name, email, signupPw, confirmPw, cpf, onLogin]);
+  }, [name, email, signupPw, confirmPw, cpf, phone, birthDate, country, address, city, onLogin]);
 
   const handleForgot = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -339,7 +351,7 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
           type="tel"
           placeholder="(00) 00000-0000"
           value={phone}
-          onChange={e => setPhone(e.target.value)}
+          onChange={e => setPhone(phoneMask(e.target.value))}
           style={inputStyle}
         />
       </div>
@@ -358,14 +370,30 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
 
       {/* País */}
       <div className="relative">
-        <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
-        <input
-          type="text"
-          placeholder="País"
+        <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 z-10" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <select
           value={country}
           onChange={e => setCountry(e.target.value)}
-          style={inputStyle}
-        />
+          style={{ ...inputStyle, paddingLeft: 36 }}
+        >
+          <option value="">Selecione o país</option>
+          <option value="Brasil">🇧🇷 Brasil</option>
+          <option value="Portugal">🇵🇹 Portugal</option>
+          <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
+          <option value="Argentina">🇦🇷 Argentina</option>
+          <option value="Chile">🇨🇱 Chile</option>
+          <option value="Colômbia">🇨🇴 Colômbia</option>
+          <option value="México">🇲🇽 México</option>
+          <option value="Espanha">🇪🇸 Espanha</option>
+          <option value="Reino Unido">🇬🇧 Reino Unido</option>
+          <option value="Canadá">🇨🇦 Canadá</option>
+          <option value="Austrália">🇦🇺 Austrália</option>
+          <option value="Alemanha">🇩🇪 Alemanha</option>
+          <option value="França">🇫🇷 França</option>
+          <option value="Itália">🇮🇹 Itália</option>
+          <option value="Japão">🇯🇵 Japão</option>
+          <option value="Outro">🌍 Outro</option>
+        </select>
       </div>
 
       {/* Cidade */}

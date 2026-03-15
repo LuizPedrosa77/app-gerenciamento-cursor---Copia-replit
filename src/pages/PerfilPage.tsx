@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +48,17 @@ function TabPerfil() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
+  
+  // Individual state variables for backend data
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [phone, setPhone] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
+  
   const [form, setForm] = useState({
     nome: 'Gustavo Pedrosa', email: 'gustavo@email.com', cpf: '123.456.789-00',
     telefone: '', nascimento: '', pais: 'Brasil', cidade: '',
@@ -55,6 +66,28 @@ function TabPerfil() {
   });
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  // Fetch user data from backend on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('gpfx_auth_token');
+    if (!token) return;
+
+    fetch('https://api.painelzap.com/api/v1/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.full_name) setName(data.full_name);
+        if (data.email) setEmail(data.email);
+        if (data.cpf) setCpf(data.cpf);
+        if (data.phone) setPhone(data.phone);
+        if (data.birth_date) setBirthDate(data.birth_date);
+        if (data.country) setCountry(data.country);
+        if (data.city) setCity(data.city);
+        if (data.address) setAddress(data.address);
+      })
+      .catch(err => console.warn('[Perfil] Erro ao carregar dados:', err));
+  }, []);
 
   const handleSave = () => {
     setSaving(true);
