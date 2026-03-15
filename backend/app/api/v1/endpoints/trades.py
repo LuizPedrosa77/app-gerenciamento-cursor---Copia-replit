@@ -152,6 +152,41 @@ def create_trade(
     return create_trade_response(trade)
 
 
+@router.delete("/bulk")
+def bulk_delete_trades(
+    current_user: CurrentUser,
+    db: DbSession,
+    account_id: str = Query(..., description="ID da conta para deletar todos os trades")
+):
+    """Deleta todos os trades de uma conta específica."""
+    workspace = db.query(Workspace).filter(
+        Workspace.owner_id == current_user.id
+    ).first()
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace não encontrado"
+        )
+
+    account = db.query(Account).filter(
+        Account.id == account_id,
+        Account.workspace_id == workspace.id
+    ).first()
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conta não encontrada"
+        )
+
+    deleted = db.query(Trade).filter(
+        Trade.account_id == account_id
+    ).delete(synchronize_session=False)
+
+    db.commit()
+
+    return {"message": f"{deleted} trades removidos", "deleted": deleted}
+
+
 @router.get("/{trade_id}", response_model=TradeResponse)
 def get_trade(
     trade_id: str,

@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Mail, Lock, User, CreditCard, Eye, EyeOff, ArrowLeft, Check, LayoutDashboard, Calendar, Plug, Play, Bot, FileText } from 'lucide-react';
+import authService from '@/services/authService';
 
 type AuthView = 'login' | 'signup' | 'forgot';
 
@@ -118,6 +119,7 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
   const [showPw, setShowPw] = useState(false);
   const [showPwConfirm, setShowPwConfirm] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   // Form states
   const [email, setEmail] = useState('');
@@ -130,17 +132,39 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
 
   const strength = useMemo(() => passwordStrength(signupPw), [signupPw]);
 
-  const handleLogin = useCallback((e: React.FormEvent) => {
+  const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { setLoading(false); onLogin(); }, 1200);
-  }, [onLogin]);
+    setAuthError('');
+    try {
+      await authService.login({ email, password });
+      onLogin();
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || 'Email ou senha incorretos';
+      setAuthError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [email, password, onLogin]);
 
-  const handleSignup = useCallback((e: React.FormEvent) => {
+  const handleSignup = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (signupPw !== confirmPw) {
+      setAuthError('As senhas não coincidem');
+      return;
+    }
     setLoading(true);
-    setTimeout(() => { setLoading(false); onLogin(); }, 1200);
-  }, [onLogin]);
+    setAuthError('');
+    try {
+      await authService.register({ name, email, password: signupPw, cpf: cpf.replace(/\D/g, '') });
+      onLogin();
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || 'Erro ao criar conta';
+      setAuthError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [name, email, signupPw, confirmPw, cpf, onLogin]);
 
   const handleForgot = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -239,6 +263,12 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
         </div>
       </div>
 
+      {authError && (
+        <div className="text-sm text-center px-3 py-2 rounded-lg" style={{ background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.2)' }}>
+          {authError}
+        </div>
+      )}
+
       <button type="submit" disabled={loading} style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
         {loading ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : 'Entrar'}
       </button>
@@ -322,6 +352,12 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
           <span className="underline" style={{ color: '#00d395', cursor: 'pointer' }}>Política de Privacidade</span>
         </span>
       </label>
+
+      {authError && (
+        <div className="text-sm text-center px-3 py-2 rounded-lg" style={{ background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.2)' }}>
+          {authError}
+        </div>
+      )}
 
       <button type="submit" disabled={loading || !terms} style={{ ...btnPrimary, opacity: (loading || !terms) ? 0.5 : 1 }}>
         {loading ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : 'Criar Conta'}

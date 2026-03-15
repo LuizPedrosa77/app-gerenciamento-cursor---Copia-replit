@@ -8,6 +8,8 @@ from app.models.user import User
 from app.models.account import Account
 from app.models.trade import Trade
 from app.models.workspace import Workspace
+import asyncio
+from app.websocket.trade_ws import manager as ws_manager
 
 router = APIRouter()
 
@@ -119,7 +121,7 @@ def get_or_create_account(db, workspace, login, name, server, balance):
     return account
 
 @router.post("/sync")
-def sync(req: SyncRequest, db: Session = Depends(get_db)):
+async def sync(req: SyncRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
@@ -162,6 +164,17 @@ def sync(req: SyncRequest, db: Session = Depends(get_db)):
             db.add(trade)
             imported += 1
     db.commit()
+
+    if imported > 0 or updated > 0:
+        asyncio.create_task(ws_manager.send_to_user(str(user.id), {
+            "type": "trade_synced",
+            "account_id": str(account.id),
+            "account_name": account.name,
+            "imported": imported,
+            "updated": updated,
+            "balance": float(account.balance),
+        }))
+
     return {
         "success": True,
         "imported": imported,
@@ -191,7 +204,7 @@ def open_trade(req: OpenRequest, db: Session = Depends(get_db)):
     return {"success": True, "message": "Posição aberta registrada", "ticket": req.ticket}
 
 @router.post("/close")
-def close_trade(req: CloseRequest, db: Session = Depends(get_db)):
+async def close_trade(req: CloseRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
@@ -234,6 +247,18 @@ def close_trade(req: CloseRequest, db: Session = Depends(get_db)):
         updated_msg = "criado"
     account.balance = req.balance
     db.commit()
+
+    asyncio.create_task(ws_manager.send_to_user(str(user.id), {
+        "type": "trade_closed",
+        "account_id": str(account.id),
+        "account_name": account.name,
+        "ticket": req.ticket,
+        "symbol": req.symbol,
+        "pnl": float(req.profit),
+        "result": result,
+        "new_balance": float(account.balance),
+    }))
+
     return {
         "success": True,
         "message": f"Trade {updated_msg} com sucesso",

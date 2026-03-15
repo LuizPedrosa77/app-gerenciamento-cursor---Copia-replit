@@ -82,7 +82,10 @@ function AppLayout({ onLogout }: { onLogout: () => void }) {
 
 export default function Index() {
   const [authenticated, setAuthenticated] = useState(() => {
-    return localStorage.getItem('gpfx_authenticated') === 'true';
+    return (
+      localStorage.getItem('gpfx_authenticated') === 'true' &&
+      !!localStorage.getItem('gpfx_auth_token')
+    );
   });
 
   const handleLogin = () => {
@@ -92,6 +95,9 @@ export default function Index() {
 
   const handleLogout = () => {
     localStorage.removeItem('gpfx_authenticated');
+    localStorage.removeItem('gpfx_auth_token');
+    localStorage.removeItem('gpfx_refresh_token');
+    localStorage.removeItem('user_data');
     setAuthenticated(false);
   };
 

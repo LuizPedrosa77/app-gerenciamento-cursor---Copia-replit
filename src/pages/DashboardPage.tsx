@@ -180,7 +180,7 @@ function MonthlyGoalCard({ accFilter }: { accFilter: string }) {
 }
 
 export default function DashboardPage() {
-  const { state } = useGPFX();
+  const { state, wsConnected } = useGPFX();
   const [accFilter, setAccFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
 
@@ -328,6 +328,29 @@ export default function DashboardPage() {
 
   return (
     <div className="page-fade-in flex flex-col gap-5 max-w-[1400px] mx-auto p-6">
+      {/* Indicador WebSocket */}
+      <div className="flex items-center justify-end px-6 pt-4 pb-0">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{
+          background: wsConnected ? 'rgba(0,211,149,0.08)' : 'rgba(255,77,77,0.08)',
+          border: `1px solid ${wsConnected ? 'rgba(0,211,149,0.2)' : 'rgba(255,77,77,0.2)'}`,
+        }}>
+          <span
+            className={wsConnected ? 'animate-pulse' : ''}
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              background: wsConnected ? '#00d395' : '#ff4d4d',
+              display: 'inline-block',
+            }}
+          />
+          <span className="text-[11px] font-semibold" style={{
+            color: wsConnected ? '#00d395' : '#ff4d4d',
+          }}>
+            {wsConnected ? 'Tempo real ativo' : 'Sem conexão em tempo real'}
+          </span>
+        </div>
+      </div>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-extrabold" style={{ color: 'var(--gpfx-text-primary)' }}>Dashboard</h1>
         <div className="flex items-center gap-2 flex-wrap">

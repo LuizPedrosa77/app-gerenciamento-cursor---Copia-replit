@@ -25,6 +25,7 @@ interface GPFXContextType {
   switchMonth: (m: number) => void;
   updateWithdrawal: (year: number, month: number, val: number) => void;
   showSaved: boolean;
+  wsConnected: boolean;
 }
 
 const GPFXContext = createContext<GPFXContextType | null>(null);
@@ -33,6 +34,15 @@ const GPFXContext = createContext<GPFXContextType | null>(null);
 
 function isAuthenticated(): boolean {
   return !!localStorage.getItem('gpfx_auth_token');
+}
+
+function getAuthToken(): string | null {
+  return localStorage.getItem('gpfx_auth_token');
+}
+
+function getWsUrl(): string {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  return apiBase.replace(/^http/, 'ws') + '/ws/trades';
 }
 
 /** Map backend account to local Account shape. Trades are loaded separately. */
@@ -82,6 +92,10 @@ function fireAndForget(promise: Promise<any>) {
 export function GPFXProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<GPFXState>(loadState);
   const [showSaved, setShowSaved] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
+  const wsReconnectTimer = useRef<ReturnType<typeof setTimeout>>();
+  const wsReconnectDelay = useRef(2000);
   const savedTimer = useRef<ReturnType<typeof setTimeout>>();
   const initialLoadDone = useRef(false);
 
@@ -533,6 +547,111 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('keydown', handler);
   }, [doSave]);
 
+  const reloadAccount = useCallback(async (accountId: string, newBalance?: number) => {
+    try {
+      const apiTrades = await tradeService.list(accountId);
+      const trades = apiTrades.map(apiTradeToLocal);
+      setState(prev => {
+        const accounts = prev.accounts.map(acc => {
+          if ((acc as any)._apiId === accountId) {
+            return {
+              ...acc,
+              trades,
+              ...(newBalance !== undefined ? { balance: newBalance } : {}),
+            };
+          }
+          return acc;
+        });
+        const next = { ...prev, accounts };
+        saveState(next);
+        return next;
+      });
+    } catch (err) {
+      console.warn('[GPFX WS] Falha ao recarregar conta', accountId, err);
+    }
+  }, []);
+
+  const connectWebSocket = useCallback(() => {
+    if (!isAuthenticated()) return;
+    const token = getAuthToken();
+    if (!token) return;
+
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.close();
+    }
+
+    const wsUrl = `${getWsUrl()}?token=${encodeURIComponent(token)}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log('[GPFX WS] Conectado');
+      setWsConnected(true);
+      wsReconnectDelay.current = 2000;
+    };
+
+    ws.onmessage = async (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        const { type, account_id, account_name, imported, updated, balance, pnl, result, ticket, symbol, new_balance } = msg;
+
+        if (type === 'connected') {
+          console.log('[GPFX WS] Handshake OK, user_id:', msg.user_id);
+          return;
+        }
+        if (type === 'pong') return;
+
+        if (type === 'trade_synced') {
+          console.log(`[GPFX WS] trade_synced: ${imported} novos, ${updated} atualizados — ${account_name}`);
+          await reloadAccount(account_id, balance);
+          return;
+        }
+
+        if (type === 'trade_closed') {
+          console.log(`[GPFX WS] trade_closed: ticket=${ticket} ${symbol} ${result} PnL=${pnl}`);
+          await reloadAccount(account_id, new_balance);
+          return;
+        }
+      } catch (err) {
+        console.warn('[GPFX WS] Erro ao processar mensagem', err);
+      }
+    };
+
+    ws.onerror = () => {
+      console.warn('[GPFX WS] Erro de conexão');
+    };
+
+    ws.onclose = () => {
+      setWsConnected(false);
+      console.log(`[GPFX WS] Desconectado. Reconectando em ${wsReconnectDelay.current}ms...`);
+      wsReconnectTimer.current = setTimeout(() => {
+        wsReconnectDelay.current = Math.min(wsReconnectDelay.current * 2, 30000);
+        connectWebSocket();
+      }, wsReconnectDelay.current);
+    };
+  }, [reloadAccount]);
+
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    connectWebSocket();
+
+    const pingInterval = setInterval(() => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, 25000);
+
+    return () => {
+      clearInterval(pingInterval);
+      clearTimeout(wsReconnectTimer.current);
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.close();
+      }
+    };
+  }, [connectWebSocket]);
+
   return (
     <GPFXContext.Provider value={{
       state, activeAcc, setState, save,
@@ -541,6 +660,7 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
       addTrade, addNewDay, updateTrade, deleteTrade, resetAccount,
       switchYear, switchMonth, updateWithdrawal,
       showSaved,
+      wsConnected,
     }}>
       {children}
     </GPFXContext.Provider>

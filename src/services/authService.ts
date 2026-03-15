@@ -48,8 +48,8 @@ class AuthService {
       const response = await api.post<AuthResponse>('/api/v1/auth/login', credentials);
       
       // Salvar tokens e dados do usuário
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('refresh_token', response.data.refresh_token);
+      localStorage.setItem('gpfx_auth_token', response.data.access_token);
+      localStorage.setItem('gpfx_refresh_token', response.data.refresh_token);
       localStorage.setItem('user_data', JSON.stringify(response.data.user));
       
       return response.data;
@@ -67,8 +67,8 @@ class AuthService {
       const response = await api.post<AuthResponse>('/api/v1/auth/register', data);
       
       // Salvar tokens e dados do usuário
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('refresh_token', response.data.refresh_token);
+      localStorage.setItem('gpfx_auth_token', response.data.access_token);
+      localStorage.setItem('gpfx_refresh_token', response.data.refresh_token);
       localStorage.setItem('user_data', JSON.stringify(response.data.user));
       
       return response.data;
@@ -83,7 +83,7 @@ class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = localStorage.getItem('gpfx_refresh_token');
       
       if (refreshToken) {
         // Chamar endpoint de logout no backend
@@ -94,12 +94,12 @@ class AuthService {
       // Mesmo com erro, limpar dados locais
     } finally {
       // Limpar dados locais
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('gpfx_auth_token');
+      localStorage.removeItem('gpfx_refresh_token');
       localStorage.removeItem('user_data');
       
       // Redirecionar para login
-      window.location.href = '/login';
+      window.location.href = '/';
     }
   }
 
@@ -108,7 +108,7 @@ class AuthService {
    */
   async refreshToken(): Promise<RefreshTokenResponse> {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = localStorage.getItem('gpfx_refresh_token');
       
       if (!refreshToken) {
         throw new Error('No refresh token available');
@@ -119,8 +119,8 @@ class AuthService {
       });
       
       // Salvar novos tokens
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('refresh_token', response.data.refresh_token);
+      localStorage.setItem('gpfx_auth_token', response.data.access_token);
+      localStorage.setItem('gpfx_refresh_token', response.data.refresh_token);
       
       return response.data;
     } catch (error) {
@@ -150,7 +150,7 @@ class AuthService {
    * Verifica se o usuário está autenticado
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('gpfx_auth_token');
     const userData = localStorage.getItem('user_data');
     
     return !!(token && userData);
@@ -185,14 +185,14 @@ class AuthService {
    * Obtém o token de acesso
    */
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+    return localStorage.getItem('gpfx_auth_token');
   }
 
   /**
    * Obtém o refresh token
    */
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    return localStorage.getItem('gpfx_refresh_token');
   }
 
   /**
