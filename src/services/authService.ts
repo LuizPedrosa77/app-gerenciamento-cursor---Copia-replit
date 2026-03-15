@@ -71,6 +71,7 @@ class AuthService {
         password: data.password,
         cpf: data.cpf || null,
       };
+      console.log('[AUTH] Register payload:', JSON.stringify(payload));
       const response = await api.post<AuthResponse>('/api/v1/auth/register', payload);
       localStorage.setItem('gpfx_auth_token', response.data.access_token);
       localStorage.setItem('gpfx_refresh_token', response.data.refresh_token);
