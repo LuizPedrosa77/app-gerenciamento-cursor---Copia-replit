@@ -173,6 +173,16 @@ export default function AuthPage({ onLogin }: { onLogin: () => void }) {
     setLoading(true);
     setAuthError('');
     try {
+      console.log('[SIGNUP] Payload sendo enviado:', {
+        name,
+        email,
+        phone,
+        birthDate,
+        country,
+        address,
+        city,
+        cpf,
+      });
       await authService.register({
         name,
         email,
