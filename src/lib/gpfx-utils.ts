@@ -41,6 +41,7 @@ export interface Trade {
 export interface Account {
   name: string;
   balance: number;
+  initialBalance?: number;
   notes: string;
   trades: Trade[];
   withdrawals: Record<string, number>;
@@ -58,7 +59,8 @@ export interface GPFXState {
 export function createAccount(i: number): Account {
   return {
     name: 'Conta ' + (i + 1),
-    balance: 50000,
+    balance: 0,
+    initialBalance: 0,
     notes: '',
     trades: [],
     withdrawals: {},
