@@ -172,7 +172,7 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  const activeAcc = state.accounts[state.activeAccount] || state.accounts[0];
+  const activeAcc = state.accounts[state.activeAccount] || state.accounts[0] || createAccount(0);
 
   // ---- account operations ----
 

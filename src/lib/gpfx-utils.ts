@@ -117,7 +117,7 @@ export function getWeekOfMonth(dateStr: string): number {
 export function loadState(): GPFXState {
   const now = new Date();
   const defaultState: GPFXState = {
-    accounts: [],
+    accounts: [createAccount(0)],
     activeAccount: 0,
     activeYear: now.getFullYear(),
     activeMonth: now.getMonth(),
@@ -127,12 +127,12 @@ export function loadState(): GPFXState {
   if (saved) {
     try {
       const state = JSON.parse(saved);
-      // Se não tiver contas ou tiver conta com balance hardcoded de 50000
-      // retorna estado padrão vazio para forçar carregamento do backend
       if (!state.accounts || state.accounts.length === 0) {
         return defaultState;
       }
-      if (state.activeAccount >= state.accounts.length) state.activeAccount = 0;
+      if (state.activeAccount >= state.accounts.length) {
+        state.activeAccount = 0;
+      }
       return state;
     } catch (e) {
       return defaultState;

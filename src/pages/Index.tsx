@@ -97,13 +97,33 @@ class ErrorBoundary extends React.Component<
         <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d1117' }}>
           <div className="text-center">
             <div className="text-4xl mb-4">⚠️</div>
-            <div className="text-lg font-bold mb-2" style={{ color: '#e2e8f0' }}>Algo deu errado</div>
+            <div className="text-lg font-bold mb-2" style={{ color: '#e2e8f0' }}>
+              Algo deu errado
+            </div>
+            <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Carregando seus dados...
+            </p>
             <button
-              onClick={() => { localStorage.clear(); window.location.href = '/'; }}
+              onClick={() => {
+                this.setState({ hasError: false });
+                window.location.reload();
+              }}
               className="px-4 py-2 rounded-lg text-sm font-bold mt-4"
               style={{ background: '#00d395', color: '#0d1117' }}
             >
-              Limpar dados e recarregar
+              Tentar novamente
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem('gustavoPedrosaFX_v1');
+                localStorage.removeItem('gpfx_authenticated');
+                localStorage.removeItem('gpfx_auth_token');
+                window.location.href = '/';
+              }}
+              className="px-4 py-2 rounded-lg text-sm font-bold mt-4 ml-2"
+              style={{ background: 'rgba(255,77,77,0.2)', color: '#ff4d4d' }}
+            >
+              Sair e limpar dados
             </button>
           </div>
         </div>
