@@ -115,38 +115,31 @@ export function getWeekOfMonth(dateStr: string): number {
 }
 
 export function loadState(): GPFXState {
-  const saved = localStorage.getItem('gustavoPedrosaFX_v1');
-  if (saved) {
-    try {
-      const state = JSON.parse(saved);
-      if (!state.accounts || state.accounts.length === 0) {
-        state.accounts = [createAccount(0)];
-      }
-      if (state.activeAccount >= state.accounts.length) state.activeAccount = 0;
-      return state;
-    } catch (e) { /* fall through */ }
-  }
-  const oldSaved = localStorage.getItem('forexTrackerPro_v2');
-  if (oldSaved) {
-    try {
-      const old = JSON.parse(oldSaved);
-      const withTrades = old.accounts.filter((a: Account) => a.trades && a.trades.length > 0);
-      const state: GPFXState = {
-        ...old,
-        accounts: withTrades.length > 0 ? withTrades : [createAccount(0)],
-        activeAccount: 0,
-      };
-      localStorage.setItem('gustavoPedrosaFX_v1', JSON.stringify(state));
-      return state;
-    } catch (e) { /* fall through */ }
-  }
   const now = new Date();
-  return {
-    accounts: [createAccount(0)],
+  const defaultState: GPFXState = {
+    accounts: [],
     activeAccount: 0,
     activeYear: now.getFullYear(),
     activeMonth: now.getMonth(),
   };
+
+  const saved = localStorage.getItem('gustavoPedrosaFX_v1');
+  if (saved) {
+    try {
+      const state = JSON.parse(saved);
+      // Se não tiver contas ou tiver conta com balance hardcoded de 50000
+      // retorna estado padrão vazio para forçar carregamento do backend
+      if (!state.accounts || state.accounts.length === 0) {
+        return defaultState;
+      }
+      if (state.activeAccount >= state.accounts.length) state.activeAccount = 0;
+      return state;
+    } catch (e) {
+      return defaultState;
+    }
+  }
+
+  return defaultState;
 }
 
 export function saveState(state: GPFXState): void {

@@ -563,18 +563,14 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('keydown', handler);
   }, [doSave]);
 
-  const reloadAccount = useCallback(async (accountId: string, newBalance?: number) => {
+  const reloadAccount = useCallback(async (accountId: string) => {
     try {
       const apiTrades = await tradeService.list(accountId);
       const trades = apiTrades.map(apiTradeToLocal);
       setState(prev => {
         const accounts = prev.accounts.map(acc => {
           if ((acc as any)._apiId === accountId) {
-            return {
-              ...acc,
-              trades,
-              ...(newBalance !== undefined ? { balance: newBalance } : {}),
-            };
+            return { ...acc, trades };
           }
           return acc;
         });
@@ -620,13 +616,13 @@ export function GPFXProvider({ children }: { children: React.ReactNode }) {
 
         if (type === 'trade_synced') {
           console.log(`[GPFX WS] trade_synced: ${imported} novos, ${updated} atualizados — ${account_name}`);
-          await reloadAccount(account_id, balance);
+          await reloadAccount(account_id);
           return;
         }
 
         if (type === 'trade_closed') {
           console.log(`[GPFX WS] trade_closed: ticket=${ticket} ${symbol} ${result} PnL=${pnl}`);
-          await reloadAccount(account_id, new_balance);
+          await reloadAccount(account_id);
           return;
         }
       } catch (err) {
