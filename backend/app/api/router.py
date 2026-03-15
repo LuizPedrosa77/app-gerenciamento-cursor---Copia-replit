@@ -131,13 +131,6 @@ api_router.include_router(
     tags=["metaapi"]
 )
 
-# Import and include MT5 EA router
-from app.api.v1.endpoints import mt5_ea
-api_router.include_router(
-    mt5_ea.router,
-    prefix="/mt5-ea",
-    tags=["mt5-ea"]
-)
 
 # Add endpoint routers here when they are created
 # Example:
